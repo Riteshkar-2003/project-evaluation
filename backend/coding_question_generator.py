@@ -304,14 +304,14 @@ def generate_coding_question(
         if prev_list:
             avoid_clause = f"\n10. Do NOT generate problems similar to previously asked: {prev_list}. Pick a different algorithmic concept."
 
-    clean_resume = resume_text.strip() if resume_text else "Software engineering candidate skilled in algorithms and data structures."
+    clean_resume = (resume_text.strip() if resume_text else "Software engineering candidate skilled in algorithms and data structures.")[:1500]
     starter_template = get_default_starter_code(language)
 
   
     rag_coding_context = retrieve_coding_knowledge(
         query=f"{difficulty} algorithm problem data structures",
         language=language,
-        k=3
+        k=2
     )
 
     prompt = f"""
@@ -430,7 +430,7 @@ Return exactly this JSON structure:
                 ],
                 response_format={"type": "json_object"},
                 temperature=0.2,
-                max_tokens=4096
+                max_tokens=2048
             )
             content = response.choices[0].message.content.strip()
             parsed_q = safe_parse_json(content)
@@ -464,7 +464,7 @@ Return exactly this JSON structure:
                         }
                     ],
                     temperature=0.2,
-                    max_tokens=4096
+                    max_tokens=2048
                 )
                 content = retry_resp.choices[0].message.content.strip()
                 parsed_q = safe_parse_json(content)

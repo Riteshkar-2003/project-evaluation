@@ -28,15 +28,31 @@ fallback_model_list = list(dict.fromkeys(available_models))
 primary_model = fallback_model_list[0]
 secondary_models = fallback_model_list[1:]
 
+# Lower temperature = faster, more deterministic responses.
+# max_tokens capped to avoid the model generating unbounded long output (main latency driver).
 primary_llm = ChatGroq(
     model=primary_model,
-    temperature=0.7,
+    temperature=0.3,       # was 0.7 — lower = faster & more focused output
+    max_tokens=600,        # cap output tokens — sufficient for Q&A evaluation JSON
     api_key=groq_api_key
 )
 
 fallback_llms = [
-    ChatGroq(model=m, temperature=0.7, api_key=groq_api_key)
+    ChatGroq(model=m, temperature=0.3, max_tokens=600, api_key=groq_api_key)
     for m in secondary_models
 ]
 
 llm = primary_llm.with_fallbacks(fallback_llms)
+
+# Separate LLM instance with higher token limit for report generation (needs more output)
+report_llm_primary = ChatGroq(
+    model=primary_model,
+    temperature=0.3,
+    max_tokens=1500,
+    api_key=groq_api_key
+)
+report_fallback_llms = [
+    ChatGroq(model=m, temperature=0.3, max_tokens=1500, api_key=groq_api_key)
+    for m in secondary_models
+]
+report_llm = report_llm_primary.with_fallbacks(report_fallback_llms)

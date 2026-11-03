@@ -110,33 +110,37 @@ export default function InterviewPage() {
     ) => {
         try {
             setLoadingFirstQuestion(true);
+
+            // Use pre-fetched question from dashboard if available (reduces wait time)
+            const prefetched = sessionStorage.getItem("prefetchedFirstQuestion");
+            const prefetchedDiff = sessionStorage.getItem("prefetchedDifficulty");
+
+            if (prefetched && prefetchedDiff === selectedDifficulty) {
+                console.log("[Interview] Using pre-fetched question from dashboard");
+                setQuestion(prefetched);
+                // Clean up so it won't be reused on next interview
+                sessionStorage.removeItem("prefetchedFirstQuestion");
+                sessionStorage.removeItem("prefetchedDifficulty");
+                return;
+            }
+
+            // Fallback: fetch fresh from API
             const data = await getFirstQuestion(
                 resume,
                 selectedDifficulty
             );
 
-            console.log(
-                "FIRST QUESTION RESPONSE:",
-                data
-            );
+            console.log("FIRST QUESTION RESPONSE:", data);
 
             if (!data?.question) {
-                throw new Error(
-                    "Backend did not return a question"
-                );
+                throw new Error("Backend did not return a question");
             }
 
             setQuestion(data.question);
 
         } catch (error) {
-            console.error(
-                "FIRST QUESTION ERROR:",
-                error
-            );
-
-            setQuestion(
-                "Unable to generate interview question."
-            );
+            console.error("FIRST QUESTION ERROR:", error);
+            setQuestion("Unable to generate interview question.");
             hasStartedRef.current = false;
         } finally {
             setLoadingFirstQuestion(false);

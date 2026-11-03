@@ -1,6 +1,7 @@
 from langchain_core.messages import SystemMessage, HumanMessage
-from config import llm
+from config import llm, report_llm
 import json
+import concurrent.futures
 from rag_technical.retriever import get_rag_context, retrieve_answer_analysis_knowledge
 
 
@@ -206,12 +207,14 @@ def get_next_section(all_sections, asked_sections):
 
 
 def extract_resume_information(resume_text):
+    # Trim resume text to keep prompt short (first 3000 chars is sufficient for most CVs)
+    resume_trimmed = (resume_text or "")[:3000]
 
     prompt = f"""
 Extract the candidate's resume information into JSON.
 
 Resume:
-{resume_text}
+{resume_trimmed}
 
 Return ONLY valid JSON.
 
@@ -283,36 +286,20 @@ def generate_first_question(
     resume_data,
     difficulty
 ):
-
     compact_resume = build_compact_resume(resume_data)
     sections = get_resume_sections(resume_data)
-
-  
     skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", [])) + list(resume_data.get("technologies", []))
-    rag_context = get_rag_context(skills=skills, difficulty=difficulty, top_k=4)
 
-    prompt = f"""
-Start the technical interview.
+    # Fetch RAG context concurrently (does not depend on LLM)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+        rag_future = ex.submit(get_rag_context, skills=skills, difficulty=difficulty, top_k=2)
+        rag_context = rag_future.result(timeout=8)
 
-Candidate resume:
-{compact_json(compact_resume)}
-
-Available sections:
-{", ".join(sections)}
-
-Starting difficulty:
-{difficulty}
-
-{f"RAG TECHNICAL KNOWLEDGE BASE CONTEXT:\n{rag_context}\n" if rag_context else ""}
-
-Instructions:
-- Use the candidate's skills and the concepts from the RAG knowledge base above to craft a high-quality interview question.
-- Select one important item from the resume.
-- Ask exactly ONE technical interview question.
-- Do not give the answer.
-
-Return ONLY the question.
-"""
+    prompt = f"""Start technical interview. Difficulty: {difficulty}.
+Resume: {compact_json(compact_resume)}
+Sections: {", ".join(sections)}
+{f"Knowledge context: {rag_context[:500]}" if rag_context else ""}
+Ask ONE technical question from the resume. Return ONLY the question."""
 
     try:
         response = llm.invoke([
@@ -323,7 +310,7 @@ Return ONLY the question.
     except Exception as e:
         print("[WARN] generate_first_question LLM failed:", e)
         first_skill = skills[0] if skills else "software engineering"
-        return f"Can you explain your experience with {first_skill} and discuss an end-to-end implementation you built?"
+        return f"Can you explain your experience with {first_skill} and describe a key challenge you solved?"
 
 
 
@@ -333,57 +320,27 @@ def analyze_answer(
     candidate_answer,
     current_difficulty
 ):
+    # Fetch RAG context in parallel (I/O-bound, doesn't block LLM)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+        rag_future = ex.submit(retrieve_answer_analysis_knowledge, question, candidate_answer, 2)
+        rag_context = rag_future.result(timeout=8)
 
- 
-    rag_context = retrieve_answer_analysis_knowledge(question, candidate_answer, top_k=3)
+    # Trim candidate answer to avoid inflating tokens
+    answer_trimmed = (candidate_answer or "")[:1500]
 
-    prompt = f"""
-Evaluate the candidate's technical answer against the following RAG Technical Knowledge Base ground truth.
-
-Question:
-{question}
-
-Candidate answer:
-{candidate_answer}
-
-Current difficulty:
-{current_difficulty}
-
-{f"RAG KNOWLEDGE BASE GROUND TRUTH REFERENCE:\n{rag_context}\n" if rag_context else ""}
-
-Analysis Guidelines:
-1. Correctness: Verify if the candidate's statements align with technical ground truth in the knowledge base.
-2. Technical understanding: Depth of explanation and accurate terminology.
-3. Completeness: Did they answer the core question or miss key aspects?
-4. Strengths: What did the candidate explain well?
-5. Weaknesses: What was incomplete, incorrect, or omitted?
-6. Correct Answer: Provide a comprehensive, accurate, and authoritative reference answer based on the knowledge base.
-
-Give a score from 0 to 10.
-Determine the next difficulty.
-
-Rules:
-Strong answer -> increase difficulty.
-Average answer -> keep difficulty.
-Weak answer -> decrease difficulty.
-
-Return ONLY valid JSON matching this schema:
-{{
-    "score": 0,
-    "evaluation": "Detailed constructive analysis comparing candidate answer to knowledge base concepts",
-    "correct_answer": "Complete authoritative ground-truth answer that should have been given",
-    "strengths": ["strength 1", "strength 2"],
-    "weaknesses": ["weakness 1"],
-    "next_difficulty": "Easy"
-}}
-"""
+    prompt = f"""Evaluate this interview answer. Difficulty: {current_difficulty}.
+Q: {question}
+A: {answer_trimmed}
+{f"Reference: {rag_context[:400]}" if rag_context else ""}
+Score 0-10. Next difficulty: Easy/Medium/Hard.
+Return ONLY valid JSON:
+{{"score":0,"evaluation":"brief analysis","correct_answer":"ideal answer in 2-3 sentences","strengths":["s1"],"weaknesses":["w1"],"next_difficulty":"Easy"}}"""
 
     response = llm.invoke([
         SystemMessage(
             content=(
-                "You are an expert technical interviewer evaluator. "
-                "Analyze candidate answers against technical knowledge base ground truth. "
-                "Return only valid JSON."
+                "You are a technical interviewer evaluator. "
+                "Return only valid JSON, no extra text."
             )
         ),
         HumanMessage(content=prompt)
@@ -420,64 +377,29 @@ def generate_next_question(
     evaluation,
     asked_sections
 ):
-
     compact_resume = build_compact_resume(resume_data)
-
-    recent_history = get_recent_history(
-        chat_history,
-        limit=4
-    )
-
+    recent_history = get_recent_history(chat_history, limit=3)  # reduced from 4
     all_sections = get_resume_sections(resume_data)
-
-    next_section = get_next_section(
-        all_sections,
-        asked_sections
-    )
-
+    next_section = get_next_section(all_sections, asked_sections)
     skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", []))
-    rag_context = get_rag_context(skills=skills, difficulty=current_difficulty, query_text=str(next_section or ""), top_k=3)
 
-    prompt = f"""
-Continue the technical interview.
+    # Parallel RAG fetch
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+        rag_future = ex.submit(get_rag_context, skills=skills, difficulty=current_difficulty, query_text=str(next_section or ""), top_k=2)
+        rag_context = rag_future.result(timeout=8)
 
-Candidate resume:
-{compact_json(compact_resume)}
+    # Compact eval summary (only score + 1 weakness)
+    eval_summary = {
+        "score": evaluation.get("score", 0),
+        "weak": (evaluation.get("weaknesses") or [""])[:1]
+    }
 
-Next resume section to consider:
-{next_section}
-
-Current difficulty:
-{current_difficulty}
-
-Previous answer evaluation:
-{compact_json({
-    "score": evaluation.get("score", 0),
-    "evaluation": evaluation.get("evaluation", ""),
-    "strengths": evaluation.get("strengths", []),
-    "weaknesses": evaluation.get("weaknesses", [])
-})}
-
-Recent interview history (Stored Q&A list):
-{compact_json(recent_history)}
-
-Sections already covered:
-{compact_json(asked_sections)}
-
-{f"RAG TECHNICAL KNOWLEDGE BASE CONTEXT:\n{rag_context}\n" if rag_context else ""}
-
-Instructions:
-- Prefer the requested resume section and leverage concepts from the RAG knowledge base.
-- Use information actually present in the resume.
-- Do not invent information.
-- Do not repeat a previously asked question.
-- Adapt difficulty according to the previous answer evaluation.
-- Ask exactly ONE question.
-- Do not provide the answer.
-- Do not provide explanation.
-
-Return ONLY the next interview question.
-"""
+    prompt = f"""Continue technical interview. Difficulty: {current_difficulty}. Section: {next_section}.
+Resume: {compact_json(compact_resume)}
+Recent Q&A: {compact_json(recent_history)}
+Last score: {compact_json(eval_summary)}
+{f"Context: {rag_context[:400]}" if rag_context else ""}
+Ask ONE new question not already covered. Return ONLY the question."""
 
     try:
         response = llm.invoke([
@@ -486,11 +408,9 @@ Return ONLY the next interview question.
         ])
         return response.content.strip()
     except Exception as e:
-        print("[WARN] generate_first_question LLM failed:", e)
+        print("[WARN] generate_next_question LLM failed:", e)
         first_skill = skills[0] if skills else "software engineering"
-        return f"Can you explain your experience with {first_skill} and discuss an end-to-end implementation you built?"
-
-
+        return f"Can you walk me through a challenging {next_section or first_skill} implementation you built and the trade-offs you made?"
 
 def build_computed_report(resume_data, interview_history):
     if not interview_history:
@@ -710,7 +630,7 @@ Use exactly this structure:
 """
 
     try:
-        response = llm.invoke([
+        response = report_llm.invoke([
             SystemMessage(
                 content=(
                     "You are an expert technical interview evaluator. "

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { uploadResume } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { uploadResume, getFirstQuestion } from "@/lib/api";
 import UserQueryModal from "../components/UserQueryModal";
 import { MessageSquarePlus, ShieldCheck } from "lucide-react";
 import {
@@ -59,6 +59,7 @@ export default function Dashboard() {
     });
 
     const [loading, setLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState("Preparing your interview...");
     const [activeAction, setActiveAction] = useState("");
     const [error, setError] = useState("");
 
@@ -221,142 +222,181 @@ export default function Dashboard() {
         setError("");
 
         if (!resumeFile && !hasExistingResume) {
-            setError(
-                "Please upload your resume before starting the interview."
-            );
-
+            setError("Please upload your resume before starting the interview.");
             return;
         }
 
         try {
             setLoading(true);
+            setLoadingMessage("Uploading your resume...");
+
+            let currentResumeData = null;
 
             if (resumeFile) {
                 const data = await uploadResume(resumeFile, user?.id || 1);
-
-                console.log(
-                    "RESUME UPLOAD RESPONSE:",
-                    data
-                );
+                console.log("RESUME UPLOAD RESPONSE:", data);
 
                 if (!data?.resume_data) {
-                    throw new Error(
-                        "Backend did not return resume_data"
-                    );
+                    throw new Error("Backend did not return resume_data");
                 }
 
-                sessionStorage.setItem(
-                    "resumeData",
-                    JSON.stringify(data.resume_data)
-                );
-
-                sessionStorage.setItem(
-                    "resumeFileName",
-                    data.filename || resumeFile.name
-                );
-
-                setExistingResumeName(
-                    data.filename || resumeFile.name
-                );
-
+                currentResumeData = data.resume_data;
+                sessionStorage.setItem("resumeData", JSON.stringify(data.resume_data));
+                sessionStorage.setItem("resumeFileName", data.filename || resumeFile.name);
+                setExistingResumeName(data.filename || resumeFile.name);
                 setHasExistingResume(true);
 
                 const elig = checkSkillsEligibility(data.resume_data);
                 setCodingEligibility({ ...elig, checked: true });
             } else {
-                const storedResume =
-                    sessionStorage.getItem("resumeData");
-
+                const storedResume = sessionStorage.getItem("resumeData");
                 if (!storedResume) {
-                    throw new Error(
-                        "Resume session expired. Please upload your resume again."
-                    );
+                    throw new Error("Resume session expired. Please upload your resume again.");
                 }
-
                 try {
-                    const parsedResume = JSON.parse(storedResume);
-                    const elig = checkSkillsEligibility(parsedResume);
+                    currentResumeData = JSON.parse(storedResume);
+                    const elig = checkSkillsEligibility(currentResumeData);
                     setCodingEligibility({ ...elig, checked: true });
                 } catch (pe) {
                     console.error(pe);
                 }
             }
 
-            sessionStorage.setItem(
-                "difficulty",
-                difficulty
-            );
+            sessionStorage.setItem("difficulty", difficulty);
 
-            const storedUser =
-                localStorage.getItem("user");
-
+            const storedUser = localStorage.getItem("user");
             let currentUser = null;
-
             if (storedUser) {
-                try {
-                    currentUser = JSON.parse(storedUser);
-                } catch (e) {
-                    console.error(
-                        "User parse error:",
-                        e
-                    );
-                }
+                try { currentUser = JSON.parse(storedUser); } catch (e) { console.error("User parse error:", e); }
             }
-
             if (!currentUser || !currentUser.id) {
-                currentUser = {
-                    id: 1,
-                    name: "Candidate",
-                };
-
-                localStorage.setItem(
-                    "user",
-                    JSON.stringify(currentUser)
-                );
+                currentUser = { id: 1, name: "Candidate" };
+                localStorage.setItem("user", JSON.stringify(currentUser));
             }
 
-            
             if (interviewType === "coding") {
-                const currentResumeData = JSON.parse(
-                    sessionStorage.getItem("resumeData") || "{}"
-                );
-                const elig = checkSkillsEligibility(currentResumeData);
+                const resumeForCheck = currentResumeData || JSON.parse(sessionStorage.getItem("resumeData") || "{}");
+                const elig = checkSkillsEligibility(resumeForCheck);
                 setCodingEligibility({ ...elig, checked: true });
 
                 if (!elig.isEligible) {
-                    setError(
-                        "You are not skilled in Python, Java, JavaScript, C++, or C programming. You cannot attend the coding interview."
-                    );
+                    setError("You are not skilled in Python, Java, JavaScript, C++, or C programming. You cannot attend the coding interview.");
                     setLoading(false);
                     return;
                 }
 
                 sessionStorage.setItem("selectedLanguage", selectedLanguage);
+                setLoadingMessage("Setting up your coding environment...");
                 router.push("/coding-interview");
             } else {
+                // Pre-fetch the first question while showing loading screen (reduces wait on interview page)
+                setLoadingMessage("Preparing your first interview question...");
+                try {
+                    const resumeForQ = currentResumeData || JSON.parse(sessionStorage.getItem("resumeData") || "{}");
+                    const qData = await getFirstQuestion(resumeForQ, difficulty);
+                    if (qData?.question) {
+                        sessionStorage.setItem("prefetchedFirstQuestion", qData.question);
+                        sessionStorage.setItem("prefetchedDifficulty", difficulty);
+                        console.log("[Dashboard] Pre-fetched question OK");
+                    }
+                } catch (prefetchErr) {
+                    console.warn("[Dashboard] Pre-fetch failed, interview page will retry:", prefetchErr.message);
+                    sessionStorage.removeItem("prefetchedFirstQuestion");
+                }
+                setLoadingMessage("Launching interview...");
                 router.push("/interview");
             }
         } catch (err) {
-            console.error(
-                "START INTERVIEW ERROR:",
-                err
-            );
-
-            setError(
-                err.message ||
-                "Failed to start interview. Please try again."
-            );
+            console.error("START INTERVIEW ERROR:", err);
+            setError(err.message || "Failed to start interview. Please try again.");
         } finally {
             setLoading(false);
         }
     };
-
     const hasResumeReady = Boolean(
         resumeFile || hasExistingResume
     );
 
     return (
         <main className="relative min-h-screen w-full overflow-x-hidden bg-[#f8f7ff] text-slate-900">
+
+            {/* ======================================================
+                FULL-PAGE INTERVIEW LOADING OVERLAY
+            ====================================================== */}
+            <AnimatePresence>
+                {loading && (
+                    <motion.div
+                        key="interview-loading-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="fixed inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden bg-[#f8f7ff]"
+                    >
+                        {/* background blobs */}
+                        <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-violet-300/30 blur-3xl" />
+                        <div className="pointer-events-none absolute -right-32 top-40 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl" />
+                        <div className="pointer-events-none absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-purple-300/20 blur-3xl" />
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.1 }}
+                            className="relative z-10 flex flex-col items-center rounded-3xl border border-white/70 bg-white/85 px-10 py-12 text-center shadow-2xl backdrop-blur-xl sm:px-16 sm:py-14"
+                        >
+                            {/* Animated AI ring */}
+                            <div className="relative mb-7 h-24 w-24">
+                                <motion.div
+                                    className="absolute inset-0 rounded-full border-4 border-violet-100 border-t-violet-600"
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                                />
+                                <motion.div
+                                    className="absolute inset-3 rounded-full border-4 border-indigo-100 border-b-indigo-500"
+                                    animate={{ rotate: -360 }}
+                                    transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
+                                />
+                                <div className="absolute inset-7 flex items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-sm font-black text-white shadow-lg">
+                                    AI
+                                </div>
+                            </div>
+
+                            <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                                {activeAction === "coding" ? "Setting Up Coding Interview" : "Preparing Your Interview"}
+                            </h2>
+
+                            <motion.p
+                                key={loadingMessage}
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.35 }}
+                                className="mt-3 text-sm leading-6 text-slate-500 sm:text-base"
+                            >
+                                {loadingMessage}
+                            </motion.p>
+
+                            {/* Progress dots */}
+                            <div className="mt-7 flex items-center gap-2">
+                                {[0, 1, 2].map((i) => (
+                                    <motion.span
+                                        key={i}
+                                        className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500"
+                                        animate={{ scale: [1, 1.5, 1], opacity: [0.4, 1, 0.4] }}
+                                        transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.25, ease: "easeInOut" }}
+                                    />
+                                ))}
+                            </div>
+
+                            <p className="mt-6 max-w-xs text-xs text-slate-400">
+                                {activeAction === "technical"
+                                    ? "AI is reading your resume and generating your first personalised question."
+                                    : "Your coding environment is being configured. This takes just a moment."
+                                }
+                            </p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
 
 
