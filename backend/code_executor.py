@@ -84,75 +84,228 @@ _FINISHED_IDS = {3, 4}
 
 _TOOLCHAIN_CACHE: dict[str, Optional[str]] = {}
 
+
+def _ensure_linux_jdk() -> Optional[str]:
+    """
+    On Linux environments (such as Render, Railway, Docker, or bare Linux),
+    if OpenJDK is missing from the system, downloads a portable OpenJDK release
+    from Adoptium into backend/.sandbox/jdk so Java code execution works transparently.
+    """
+    if os.name == "nt":
+        return None
+
+    sandbox_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".sandbox")
+    jdk_dir = os.path.join(sandbox_dir, "jdk")
+    javac_candidate = os.path.join(jdk_dir, "bin", "javac")
+    java_candidate = os.path.join(jdk_dir, "bin", "java")
+
+    if os.path.exists(javac_candidate) and os.path.exists(java_candidate):
+        bin_dir = os.path.join(jdk_dir, "bin")
+        if bin_dir not in os.environ.get("PATH", ""):
+            os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
+        os.environ["JAVA_HOME"] = jdk_dir
+        return bin_dir
+
+    if os.path.isdir(jdk_dir):
+        for root, _, files in os.walk(jdk_dir):
+            if "javac" in files and "java" in files:
+                if root not in os.environ.get("PATH", ""):
+                    os.environ["PATH"] = root + os.pathsep + os.environ.get("PATH", "")
+                os.environ["JAVA_HOME"] = os.path.dirname(root)
+                return root
+
+    logger.info("Java JDK not found on Linux host. Auto-downloading portable OpenJDK 21...")
+    try:
+        import urllib.request
+        import tarfile
+
+        os.makedirs(sandbox_dir, exist_ok=True)
+        archive_path = os.path.join(sandbox_dir, "openjdk.tar.gz")
+
+        download_url = (
+            "https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jdk/hotspot/normal/eclipse"
+        )
+        req = urllib.request.Request(
+            download_url,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; WorksBot/1.0)"}
+        )
+        with urllib.request.urlopen(req, timeout=180) as response, open(archive_path, "wb") as out_file:
+            shutil.copyfileobj(response, out_file)
+
+        os.makedirs(jdk_dir, exist_ok=True)
+        with tarfile.open(archive_path, "r:gz") as tar:
+            tar.extractall(path=jdk_dir)
+
+        try:
+            os.remove(archive_path)
+        except OSError:
+            pass
+
+        extracted_items = [os.path.join(jdk_dir, e) for e in os.listdir(jdk_dir)]
+        subdirs = [e for e in extracted_items if os.path.isdir(e)]
+        if len(subdirs) == 1 and not os.path.exists(os.path.join(jdk_dir, "bin")):
+            wrapper_dir = subdirs[0]
+            for item in os.listdir(wrapper_dir):
+                shutil.move(os.path.join(wrapper_dir, item), os.path.join(jdk_dir, item))
+            shutil.rmtree(wrapper_dir, ignore_errors=True)
+
+        bin_dir = os.path.join(jdk_dir, "bin")
+        if os.path.isdir(bin_dir):
+            for fname in os.listdir(bin_dir):
+                fpath = os.path.join(bin_dir, fname)
+                try:
+                    mode = os.stat(fpath).st_mode
+                    os.chmod(fpath, mode | 0o755)
+                except OSError:
+                    pass
+
+            if bin_dir not in os.environ.get("PATH", ""):
+                os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
+            os.environ["JAVA_HOME"] = jdk_dir
+            logger.info("Portable OpenJDK provisioned successfully.")
+            return bin_dir
+    except Exception as exc:
+        logger.error(f"Failed to auto-provision OpenJDK on Linux: {exc}")
+
+    return None
+
+
+def ensure_jdk_ready() -> None:
+    """Pre-warms Java toolchain on startup if running on Linux."""
+    try:
+        javac = _find_binary(["javac"])
+        java = _find_binary(["java"])
+        if (not javac or not java) and os.name != "nt":
+            _ensure_linux_jdk()
+            _TOOLCHAIN_CACHE.clear()
+            _find_binary(["javac"])
+            _find_binary(["java"])
+    except Exception as exc:
+        logger.warning(f"ensure_jdk_ready notice: {exc}")
+
+
 def _find_binary(binary_names: list[str]) -> Optional[str]:
     """
-    Locates an executable by scanning:
+    Locates an executable across Windows, Linux, and cloud environments (Render/Railway/Docker).
+    Scans:
     1. System PATH
-    2. WinGet installed portable packages (%LOCALAPPDATA%\\Microsoft\\WinGet)
-    3. Common Windows installation paths (Node.js, Oracle Java, MSYS2, MinGW, Chocolatey)
+    2. JAVA_HOME environment variable
+    3. Project sandbox directories (backend/.sandbox/jdk/bin)
+    4. Linux standard JDK directories (/usr/lib/jvm, /usr/java, /opt/java, etc.)
+    5. Windows WinGet and standard install paths
     Caches results for performance.
     """
     cache_key = ":".join(binary_names)
     if cache_key in _TOOLCHAIN_CACHE:
         return _TOOLCHAIN_CACHE[cache_key]
 
-   
     for b in binary_names:
         found = shutil.which(b)
         if found:
             _TOOLCHAIN_CACHE[cache_key] = found
             return found
 
-   
-    local_app_data = os.environ.get("LOCALAPPDATA", "")
-    if local_app_data:
-        winget_pkgs = os.path.join(local_app_data, "Microsoft", "WinGet", "Packages")
-        winget_links = os.path.join(local_app_data, "Microsoft", "WinGet", "Links")
+    java_home = os.environ.get("JAVA_HOME")
+    if java_home:
         for b in binary_names:
-            link_candidate = os.path.join(winget_links, f"{b}.exe")
-            if os.path.exists(link_candidate):
-                _TOOLCHAIN_CACHE[cache_key] = link_candidate
-                return link_candidate
+            for ext in ("", ".exe"):
+                candidate = os.path.join(java_home, "bin", f"{b}{ext}")
+                if os.path.exists(candidate) and not os.path.isdir(candidate):
+                    _TOOLCHAIN_CACHE[cache_key] = candidate
+                    return candidate
 
-          
-            matches = glob.glob(os.path.join(winget_pkgs, "**", f"{b}.exe"), recursive=True)
-            if matches:
-                _TOOLCHAIN_CACHE[cache_key] = matches[0]
-                return matches[0]
-
-  
-    std_dirs = [
-        r"C:\Program Files\nodejs",
-        r"C:\Program Files (x86)\nodejs",
-        r"C:\Program Files\Common Files\Oracle\Java\javapath",
-        r"C:\ProgramData\chocolatey\bin",
-        r"C:\MinGW\bin",
-        r"C:\msys64\mingw64\bin",
-        r"C:\msys64\ucrt64\bin",
-        r"C:\msys64\usr\bin",
-        r"C:\w64devkit\bin",
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    project_sandbox_dirs = [
+        os.path.join(base_dir, ".sandbox", "jdk", "bin"),
+        os.path.join(base_dir, "..", ".sandbox", "jdk", "bin"),
+        os.path.join(base_dir, ".jdk", "bin"),
+        os.path.join(base_dir, "..", ".jdk", "bin"),
+        os.path.join("/opt", "render", "project", "src", "backend", ".sandbox", "jdk", "bin"),
+        os.path.join("/opt", "render", "project", "src", ".sandbox", "jdk", "bin"),
+        os.path.join(tempfile.gettempdir(), "jdk", "bin"),
     ]
+    for pdir in project_sandbox_dirs:
+        if os.path.isdir(pdir):
+            for b in binary_names:
+                for ext in ("", ".exe"):
+                    candidate = os.path.join(pdir, f"{b}{ext}")
+                    if os.path.exists(candidate) and not os.path.isdir(candidate):
+                        _TOOLCHAIN_CACHE[cache_key] = candidate
+                        return candidate
 
-   
-    java_base_dirs = [
-        r"C:\Program Files\Eclipse Adoptium",
-        r"C:\Program Files\Microsoft",
-        r"C:\Program Files\Java",
-        r"C:\Program Files (x86)\Java",
-    ]
-    for jbase in java_base_dirs:
-        if os.path.isdir(jbase):
-            for entry in sorted(os.listdir(jbase), reverse=True):
-                if "jdk" in entry.lower() or "openjdk" in entry.lower():
-                    bin_dir = os.path.join(jbase, entry, "bin")
-                    if os.path.isdir(bin_dir) and bin_dir not in std_dirs:
-                        std_dirs.append(bin_dir)
-    for d in std_dirs:
-        for b in binary_names:
-            candidate = os.path.join(d, f"{b}.exe")
-            if os.path.exists(candidate):
-                _TOOLCHAIN_CACHE[cache_key] = candidate
-                return candidate
+    if os.name != "nt":
+        linux_roots = [
+            "/usr/lib/jvm",
+            "/usr/java",
+            "/opt/java",
+            "/opt/jdk",
+            os.path.expanduser("~/.jdk"),
+            os.path.expanduser("~/.jdks"),
+            os.path.expanduser("~/.sdkman/candidates/java/current"),
+        ]
+        linux_dirs = ["/usr/local/bin", "/usr/bin", "/bin"]
+        for root in linux_roots:
+            if os.path.isdir(root):
+                for entry in sorted(os.listdir(root), reverse=True):
+                    bdir = os.path.join(root, entry, "bin")
+                    if os.path.isdir(bdir):
+                        linux_dirs.append(bdir)
+                    elif os.path.isdir(os.path.join(root, entry)):
+                        linux_dirs.append(os.path.join(root, entry))
+
+        for d in linux_dirs:
+            for b in binary_names:
+                candidate = os.path.join(d, b)
+                if os.path.exists(candidate) and not os.path.isdir(candidate):
+                    _TOOLCHAIN_CACHE[cache_key] = candidate
+                    return candidate
+    else:
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        if local_app_data:
+            winget_pkgs = os.path.join(local_app_data, "Microsoft", "WinGet", "Packages")
+            winget_links = os.path.join(local_app_data, "Microsoft", "WinGet", "Links")
+            for b in binary_names:
+                link_candidate = os.path.join(winget_links, f"{b}.exe")
+                if os.path.exists(link_candidate):
+                    _TOOLCHAIN_CACHE[cache_key] = link_candidate
+                    return link_candidate
+
+                matches = glob.glob(os.path.join(winget_pkgs, "**", f"{b}.exe"), recursive=True)
+                if matches:
+                    _TOOLCHAIN_CACHE[cache_key] = matches[0]
+                    return matches[0]
+
+        std_dirs = [
+            r"C:\Program Files\nodejs",
+            r"C:\Program Files (x86)\nodejs",
+            r"C:\Program Files\Common Files\Oracle\Java\javapath",
+            r"C:\ProgramData\chocolatey\bin",
+            r"C:\MinGW\bin",
+            r"C:\msys64\mingw64\bin",
+            r"C:\msys64\ucrt64\bin",
+            r"C:\msys64\usr\bin",
+            r"C:\w64devkit\bin",
+        ]
+
+        java_base_dirs = [
+            r"C:\Program Files\Eclipse Adoptium",
+            r"C:\Program Files\Microsoft",
+            r"C:\Program Files\Java",
+            r"C:\Program Files (x86)\Java",
+        ]
+        for jbase in java_base_dirs:
+            if os.path.isdir(jbase):
+                for entry in sorted(os.listdir(jbase), reverse=True):
+                    if "jdk" in entry.lower() or "openjdk" in entry.lower():
+                        bin_dir = os.path.join(jbase, entry, "bin")
+                        if os.path.isdir(bin_dir) and bin_dir not in std_dirs:
+                            std_dirs.append(bin_dir)
+        for d in std_dirs:
+            for b in binary_names:
+                candidate = os.path.join(d, f"{b}.exe")
+                if os.path.exists(candidate):
+                    _TOOLCHAIN_CACHE[cache_key] = candidate
+                    return candidate
 
     _TOOLCHAIN_CACHE[cache_key] = None
     return None
@@ -386,6 +539,11 @@ def _run_local_javascript(code: str, stdin: str, timeout: int = 5) -> dict:
 def _run_local_java(code: str, stdin: str, timeout: int = 5) -> dict:
     javac_bin = _find_binary(["javac"])
     java_bin = _find_binary(["java"])
+    if (not javac_bin or not java_bin) and os.name != "nt":
+        _ensure_linux_jdk()
+        _TOOLCHAIN_CACHE.clear()
+        javac_bin = _find_binary(["javac"])
+        java_bin = _find_binary(["java"])
     if not javac_bin or not java_bin:
         return {
             "stdout": "",

@@ -26,6 +26,7 @@ from database import get_connection, init_db
 from pypdf import PdfReader
 from io import BytesIO
 from auth_google import google_login_user
+from code_executor import ensure_jdk_ready
 
 
 
@@ -38,6 +39,7 @@ app = FastAPI(
 @app.on_event("startup")
 def on_startup():
     init_db()
+    ensure_jdk_ready()
 
 
 app.add_middleware(
