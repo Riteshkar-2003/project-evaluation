@@ -689,37 +689,37 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mt-10 rounded-3xl border border-white/70 bg-white/75 p-7 shadow-xl backdrop-blur-xl md:p-8"
+          className="mt-6 sm:mt-10 rounded-2xl sm:rounded-3xl border border-white/70 bg-white/75 p-4 sm:p-6 md:p-8 shadow-xl backdrop-blur-xl"
         >
           {/* Section Header */}
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center border-b border-slate-100 pb-6">
+          <div className="flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-center border-b border-slate-100 pb-4 sm:pb-6">
             <div>
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-200">
-                  <Gauge size={20} />
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-200 shrink-0">
+                  <Gauge size={18} />
                 </span>
-                <h2 className="text-2xl font-bold text-slate-900">
-                  Candidate Performance Meter
+                <h2 className="text-lg sm:text-2xl font-bold text-slate-900">
+                  Candidate Performance 
                 </h2>
               </div>
-              <p className="mt-1.5 text-sm text-slate-500">
-                Aggregate assessment gauge reflecting evaluated proficiency across technical questioning and coding challenges.
+              <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm text-slate-500 ml-10 sm:ml-0">
+                Aggregate assessment reflecting proficiency across technical and coding challenges.
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-bold ${performanceTier.color}`}>
-                <Zap size={14} className="fill-current" />
+            <div className="flex items-center gap-3 ml-10 sm:ml-0">
+              <span className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold ${performanceTier.color}`}>
+                <Zap size={13} className="fill-current" />
                 <span>{performanceTier.label}</span>
               </span>
             </div>
           </div>
 
-          {/* Meter Cards Grid */}
-          <div className="mt-7 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Meter Cards Grid — stacks on mobile, side-by-side on lg */}
+          <div className="mt-5 sm:mt-7 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
 
             {/* Main Speedometer / Gauge Meter Column */}
-            <div className="lg:col-span-5 rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-50/90 to-white p-6 flex flex-col items-center justify-between text-center relative overflow-hidden shadow-sm">
+            <div className="lg:col-span-5 rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-50/90 to-white p-4 sm:p-6 flex flex-col items-center justify-between text-center relative overflow-hidden shadow-sm">
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-500" />
               
               <div className="w-full flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
@@ -727,8 +727,8 @@ export default function ProfilePage() {
                 <span className="font-mono">{hasReport || hasCodingReport ? `${combinedPerformanceScore}/100` : "Ready"}</span>
               </div>
 
-              {/* Speedometer Gauge Visual */}
-              <div className="relative w-64 h-36 my-2 flex items-end justify-center">
+              {/* Speedometer Gauge Visual — responsive size */}
+              <div className="relative w-48 h-28 sm:w-64 sm:h-36 my-2 flex items-end justify-center">
                 <svg viewBox="0 0 200 115" className="w-full h-full overflow-visible">
                   {/* Gauge Arc Track */}
                   <path
@@ -769,51 +769,51 @@ export default function ProfilePage() {
                 </svg>
 
                 {/* Score Number Display */}
-                <div className="absolute bottom-0 text-center">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                <div>
+                  <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
                     {hasReport || hasCodingReport ? `${combinedPerformanceScore}%` : "--"}
                   </span>
                 </div>
               </div>
 
               {/* Tier Details */}
-              <div className="mt-3 w-full">
-                <p className="text-xs font-medium text-slate-500 leading-relaxed px-4">
+              <div className="mt-2 sm:mt-3 w-full">
+                <p className="text-xs font-medium text-slate-500 leading-relaxed px-2 sm:px-4">
                   {performanceTier.desc}
                 </p>
 
                 {/* Tick Mark Legend */}
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] font-mono text-slate-400">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" />0-49% Dev</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" />50-69% Mid</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-500" />70-84% Pro</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />85%+ Expert</span>
+                <div className="mt-3 sm:mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-2 text-[10px] font-mono text-slate-400">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />0–49% Dev</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />50–69% Mid</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />70–84% Pro</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />85%+ Expert</span>
                 </div>
               </div>
             </div>
 
             {/* Detailed Performance Meters Breakdown (Technical & Coding) */}
-            <div className="lg:col-span-7 flex flex-col justify-between gap-4">
+            <div className="lg:col-span-7 flex flex-col justify-between gap-3 sm:gap-4">
 
               {/* Technical Interview Meter */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700 font-bold">
-                      <Brain size={18} />
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs">
+                <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-3 mb-3">
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700 font-bold">
+                      <Brain size={16} />
                     </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">
-                        Technical Interview Performance
+                    <div className="min-w-0">
+                      <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                        Technical Interview
                       </h3>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[10px] sm:text-[11px] text-slate-500 leading-tight hidden sm:block">
                         Evaluated conceptual clarity, project knowledge, and domain answers
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-violet-700">
+                  <div className="text-right shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-violet-700">
                       {hasReport ? `${techOverallScore}%` : "Not Taken"}
                     </span>
                     {hasReport && report.final_level && (
@@ -823,7 +823,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Meter Progress Bar */}
-                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden mb-3">
+                <div className="h-2.5 sm:h-3 w-full rounded-full bg-slate-100 overflow-hidden mb-3">
                   <motion.div
                     className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-600"
                     initial={{ width: 0 }}
@@ -860,24 +860,24 @@ export default function ProfilePage() {
               </div>
 
               {/* Coding Assessment Meter */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-bold">
-                      <Code2 size={18} />
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs">
+                <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-3 mb-3">
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-bold">
+                      <Code2 size={16} />
                     </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">
-                        Coding Assessment Performance
+                    <div className="min-w-0">
+                      <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                        Coding Assessment
                       </h3>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[10px] sm:text-[11px] text-slate-500 leading-tight hidden sm:block">
                         Evaluated algorithmic correctness, code quality, and time complexity
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-indigo-700">
+                  <div className="text-right shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-indigo-700">
                       {hasCodingReport ? `${codingOverallScore}%` : "Not Taken"}
                     </span>
                     {hasCodingReport && codingReport.difficulty && (
@@ -887,7 +887,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Meter Progress Bar */}
-                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden mb-3">
+                <div className="h-2.5 sm:h-3 w-full rounded-full bg-slate-100 overflow-hidden mb-3">
                   <motion.div
                     className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-teal-500"
                     initial={{ width: 0 }}

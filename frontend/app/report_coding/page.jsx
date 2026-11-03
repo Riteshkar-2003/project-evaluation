@@ -453,6 +453,7 @@ export default function CodingReportPage() {
 
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [feedbackExpanded, setFeedbackExpanded] = useState(false);
 
   useEffect(() => {
     try {
@@ -666,13 +667,13 @@ export default function CodingReportPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="overflow-hidden rounded-3xl border border-white/70 bg-white/80 p-5 shadow-xl backdrop-blur-xl sm:p-8"
+          className="overflow-hidden rounded-2xl sm:rounded-3xl border border-white/70 bg-white/80 p-4 sm:p-6 md:p-8 shadow-xl backdrop-blur-xl"
         >
-          <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
+          <div className="flex flex-col items-center justify-between gap-5 md:flex-row md:gap-8">
             <div className="w-full">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-200">
-                  <Code2 size={24} />
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-200">
+                  <Code2 size={20} />
                 </div>
 
                 <div>
@@ -680,21 +681,22 @@ export default function CodingReportPage() {
                     Coding Interview
                   </p>
 
-                  <h3 className="text-xl font-bold text-slate-900">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">
                     Overall Performance
                   </h3>
                 </div>
               </div>
 
-              <p className="mt-6 text-sm font-medium text-slate-500">
+              <p className="mt-4 sm:mt-5 text-sm font-medium text-slate-500">
                 Interview Level
               </p>
 
-              <h2 className="mt-1 bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
+              <h2 className="mt-1 bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-2xl sm:text-3xl md:text-4xl font-bold text-transparent">
                 {report.difficulty || "Completed"}
               </h2>
 
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500">
+              {/* Feedback — clamped to 6 lines max */}
+              <p className="mt-3 sm:mt-4 text-sm leading-6 text-slate-500 line-clamp-6">
                 {report.feedback ||
                   "Your coding interview has been evaluated by the AI system."}
               </p>
@@ -704,12 +706,12 @@ export default function CodingReportPage() {
 
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="relative flex h-40 w-40 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 p-2 shadow-2xl shadow-violet-200 sm:h-44 sm:w-44"
+              className="relative flex h-32 w-32 sm:h-40 sm:w-40 md:h-44 md:w-44 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 p-2 shadow-2xl shadow-violet-200"
             >
               <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-white">
-                <Trophy className="mb-1 text-violet-600" size={24} />
+                <Trophy className="mb-1 text-violet-600" size={22} />
 
-                <p className="text-4xl font-bold text-slate-900">
+                <p className="text-3xl sm:text-4xl font-bold text-slate-900">
                   {report.overall_score ?? 0}
                 </p>
 
@@ -867,11 +869,11 @@ export default function CodingReportPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mt-6 rounded-3xl border border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50 p-5 shadow-xl sm:p-8"
+          className="mt-6 rounded-2xl sm:rounded-3xl border border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50 p-4 sm:p-6 md:p-8 shadow-xl"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg">
-              <Sparkles size={22} />
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg">
+              <Sparkles size={20} />
             </div>
 
             <div>
@@ -879,16 +881,24 @@ export default function CodingReportPage() {
                 AI INSIGHT
               </p>
 
-              <h3 className="text-xl font-bold text-slate-900 sm:text-2xl">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">
                 AI Feedback
               </h3>
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-white/70 bg-white/70 p-5">
-            <p className="text-sm leading-8 text-slate-600">
+          <div className="mt-4 sm:mt-6 rounded-xl sm:rounded-2xl border border-white/70 bg-white/70 p-4 sm:p-5">
+            <p className={`text-sm leading-7 text-slate-600 ${feedbackExpanded ? "" : "line-clamp-6"}`}>
               {report.feedback || "No feedback available."}
             </p>
+            {report.feedback && report.feedback.length > 300 && (
+              <button
+                onClick={() => setFeedbackExpanded(!feedbackExpanded)}
+                className="mt-3 text-xs font-semibold text-violet-600 hover:text-violet-800 transition-colors"
+              >
+                {feedbackExpanded ? "Show less ▲" : "Show more ▼"}
+              </button>
+            )}
           </div>
         </motion.section>
 

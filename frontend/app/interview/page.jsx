@@ -547,18 +547,11 @@ export default function InterviewPage() {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                                 <span className="text-sm sm:text-base font-bold text-violet-100 tracking-wide">
-                                                    Generating Question {questionNumber > 0 ? `#${questionNumber + 1}` : ""}
+                                                    Generating Question {questionNumber > 0 ? `${questionNumber + 1}` : ""}
                                                 </span>
                                                
-                                                <motion.span
-                                                    className="inline-block w-0.5 h-4 bg-violet-400 rounded"
-                                                    animate={{ opacity: [1, 0, 1] }}
-                                                    transition={{ duration: 0.8, repeat: Infinity }}
-                                                />
+                                               
                                             </div>
-                                            <p className="text-xs text-violet-300/80">
-                                                AI interviewer is formulating your next tailored question...
-                                            </p>
                                         </div>
                                     </div>
                                 </div>
