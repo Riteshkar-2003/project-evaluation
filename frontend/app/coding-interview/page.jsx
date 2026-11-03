@@ -187,19 +187,8 @@ export default function CodingInterviewPage() {
   const [userId, setUserId] = useState(null);
   const [question, setQuestion] = useState(null);
   const [questionNumber, setQuestionNumber] = useState(1);
-  const [language, setLanguage] = useState(() => {
-    if (typeof window !== "undefined") {
-      return sessionStorage.getItem("selectedLanguage") || "python";
-    }
-    return "python";
-  });
-  const [code, setCode] = useState(() => {
-    if (typeof window !== "undefined") {
-      const savedLang = sessionStorage.getItem("selectedLanguage") || "python";
-      return STARTER_CODES[savedLang] || STARTER_CODES.python;
-    }
-    return STARTER_CODES.python;
-  });
+  const [language, setLanguage] = useState("python");
+  const [code, setCode] = useState(STARTER_CODES.python);
   const [difficulty, setDifficulty] = useState("Easy");
 
   const [loading, setLoading] = useState(false);
@@ -219,13 +208,7 @@ export default function CodingInterviewPage() {
   const [copiedCandidateCode, setCopiedCandidateCode] = useState(false);
   const [copiedCorrectCode, setCopiedCorrectCode] = useState(false);
   const [submissionModalData, setSubmissionModalData] = useState(null);
-  const [submittedCount, setSubmittedCount] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("codingSubmittedCount");
-      return saved ? parseInt(saved, 10) : 0;
-    }
-    return 0;
-  });
+  const [submittedCount, setSubmittedCount] = useState(0);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef(null);
 
@@ -662,12 +645,30 @@ const handleKeyDown = (e) => {
           activeLang
         );
 
-        const data = await startCodingInterview(
-          user.id,
-          storedResume,
-          activeLang,
-          storedDifficulty
-        );
+        // Instant load using pre-fetched question from dashboard if available
+        const prefetchedStr = sessionStorage.getItem("prefetchedCodingQuestion");
+        let data = null;
+        if (prefetchedStr) {
+          try {
+            const cached = JSON.parse(prefetchedStr);
+            sessionStorage.removeItem("prefetchedCodingQuestion");
+            if (cached && cached.question) {
+              console.log("[CodingInterview] Using pre-fetched coding question!");
+              data = cached;
+            }
+          } catch (e) {
+            console.warn("Failed to parse prefetched coding question:", e);
+          }
+        }
+
+        if (!data) {
+          data = await startCodingInterview(
+            user.id,
+            storedResume,
+            activeLang,
+            storedDifficulty
+          );
+        }
 
         console.log("START CODING RESPONSE:", data);
 

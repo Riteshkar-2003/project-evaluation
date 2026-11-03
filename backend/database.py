@@ -252,14 +252,40 @@ def init_db():
             db_conn.close()
 
 
+_connection_pool = None
+
 def get_connection():
     """
-    Returns an active connection to the configured MySQL database.
-    Automatically runs init_db() once if not already initialized.
+    Returns an active connection from a connection pool (reused connections).
+    Significantly reduces latency by avoiding repeated TCP handshakes per query.
     """
-    global _db_initialized
+    global _db_initialized, _connection_pool
     if not _db_initialized:
         init_db()
+
+    if _connection_pool is None:
+        cfg = _get_db_config()
+        try:
+            from mysql.connector.pooling import MySQLConnectionPool
+            _connection_pool = MySQLConnectionPool(
+                pool_name="interview_pool",
+                pool_size=5,
+                pool_reset_session=True,
+                host=cfg["host"],
+                port=cfg["port"],
+                user=cfg["user"],
+                password=cfg["password"],
+                database=cfg["database"]
+            )
+            print("[DB] MySQL connection pool initialized (size=5)")
+        except Exception as pool_err:
+            print("[DB NOTICE] Pool init skipped, falling back to direct connect:", pool_err)
+
+    if _connection_pool:
+        try:
+            return _connection_pool.get_connection()
+        except Exception as e:
+            print("[DB POOL] Pool get_connection error, falling back to direct connect:", e)
 
     cfg = _get_db_config()
     try:

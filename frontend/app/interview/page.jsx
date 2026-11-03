@@ -37,6 +37,50 @@ export default function InterviewPage() {
     const [history, setHistory] = useState([]);
     const hasStartedRef = useRef(false);
 
+    const generateFirstQuestion = async (
+        resume,
+        selectedDifficulty
+    ) => {
+        try {
+            setLoadingFirstQuestion(true);
+
+            // Use pre-fetched question from dashboard if available (reduces wait time)
+            const prefetched = sessionStorage.getItem("prefetchedFirstQuestion");
+            const prefetchedDiff = sessionStorage.getItem("prefetchedDifficulty");
+
+            if (prefetched && prefetchedDiff === selectedDifficulty) {
+                console.log("[Interview] Using pre-fetched question from dashboard");
+                setQuestion(prefetched);
+                // Clean up so it won't be reused on next interview
+                sessionStorage.removeItem("prefetchedFirstQuestion");
+                sessionStorage.removeItem("prefetchedDifficulty");
+                return;
+            }
+
+            // Fallback: fetch fresh from API
+            const data = await getFirstQuestion(
+                resume,
+                selectedDifficulty
+            );
+
+            console.log("FIRST QUESTION RESPONSE:", data);
+
+            if (!data?.question) {
+                throw new Error("Backend did not return a question");
+            }
+
+            setQuestion(data.question);
+
+        } catch (error) {
+            console.error("FIRST QUESTION ERROR:", error);
+            setQuestion("Unable to generate interview question.");
+            hasStartedRef.current = false;
+        } finally {
+            setLoadingFirstQuestion(false);
+        }
+    };
+
+
     useEffect(() => {
         if (hasStartedRef.current) return;
         hasStartedRef.current = true;
@@ -103,49 +147,6 @@ export default function InterviewPage() {
             router.push("/dashboard");
         }
     }, [router]);
-
-    const generateFirstQuestion = async (
-        resume,
-        selectedDifficulty
-    ) => {
-        try {
-            setLoadingFirstQuestion(true);
-
-            // Use pre-fetched question from dashboard if available (reduces wait time)
-            const prefetched = sessionStorage.getItem("prefetchedFirstQuestion");
-            const prefetchedDiff = sessionStorage.getItem("prefetchedDifficulty");
-
-            if (prefetched && prefetchedDiff === selectedDifficulty) {
-                console.log("[Interview] Using pre-fetched question from dashboard");
-                setQuestion(prefetched);
-                // Clean up so it won't be reused on next interview
-                sessionStorage.removeItem("prefetchedFirstQuestion");
-                sessionStorage.removeItem("prefetchedDifficulty");
-                return;
-            }
-
-            // Fallback: fetch fresh from API
-            const data = await getFirstQuestion(
-                resume,
-                selectedDifficulty
-            );
-
-            console.log("FIRST QUESTION RESPONSE:", data);
-
-            if (!data?.question) {
-                throw new Error("Backend did not return a question");
-            }
-
-            setQuestion(data.question);
-
-        } catch (error) {
-            console.error("FIRST QUESTION ERROR:", error);
-            setQuestion("Unable to generate interview question.");
-            hasStartedRef.current = false;
-        } finally {
-            setLoadingFirstQuestion(false);
-        }
-    };
 
     const submitAnswer = async () => {
         if (!answer.trim() || evaluatingAnswer || generatingNextQuestion) {
@@ -551,7 +552,7 @@ export default function InterviewPage() {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                                 <span className="text-sm sm:text-base font-bold text-violet-100 tracking-wide">
-                                                    Generating Question {questionNumber > 0 ? `${questionNumber + 1}` : ""}
+                                                    Generating Question...
                                                 </span>
                                                
                                                

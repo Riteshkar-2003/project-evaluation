@@ -76,20 +76,17 @@ export default function ReportPage() {
 
                 if (generatedReport) {
                     setReport(generatedReport);
+                    setLoading(false);
                 }
 
-                try {
-                    const saveData = await saveReport(
-                        userId,
-                        generatedReport
-                    );
-                    console.log(
-                        "REPORT SAVED:",
-                        saveData
-                    );
-                } catch (saveError) {
-                    console.warn("Could not persist report to database:", saveError);
-                }
+                // Persist report in background to prevent delaying report view
+                saveReport(userId, generatedReport)
+                    .then((saveData) => {
+                        console.log("REPORT SAVED:", saveData);
+                    })
+                    .catch((saveError) => {
+                        console.warn("Could not persist report to database:", saveError);
+                    });
             } catch (error) {
                 console.error(
                     "Report error:",

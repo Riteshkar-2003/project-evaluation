@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { uploadResume, getFirstQuestion } from "@/lib/api";
+import { uploadResume, getFirstQuestion, startCodingInterview } from "@/lib/api";
 import UserQueryModal from "../components/UserQueryModal";
 import { MessageSquarePlus, ShieldCheck } from "lucide-react";
 import {
@@ -27,48 +27,14 @@ export default function Dashboard() {
     const [isQueryModalOpen, setIsQueryModalOpen] = useState(false);
     const [resumeFile, setResumeFile] = useState(null);
 
-    const [existingResumeName, setExistingResumeName] = useState(() => {
-        if (typeof window !== "undefined") {
-            return sessionStorage.getItem("resumeFileName") || "";
-        }
-        return "";
-    });
-
-    const [hasExistingResume, setHasExistingResume] = useState(() => {
-        if (typeof window !== "undefined") {
-            const storedResume = sessionStorage.getItem("resumeData");
-            const storedName = sessionStorage.getItem("resumeFileName");
-            return Boolean(storedResume && storedName);
-        }
-        return false;
-    });
-
-    const [difficulty, setDifficulty] = useState(() => {
-        if (typeof window !== "undefined") {
-            const storedDiff = sessionStorage.getItem("difficulty");
-
-            if (
-                storedDiff &&
-                ["Easy", "Medium", "Hard"].includes(storedDiff)
-            ) {
-                return storedDiff;
-            }
-        }
-
-        return "Easy";
-    });
-
+    const [existingResumeName, setExistingResumeName] = useState("");
+    const [hasExistingResume, setHasExistingResume] = useState(false);
+    const [difficulty, setDifficulty] = useState("Easy");
     const [loading, setLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("Preparing your interview...");
     const [activeAction, setActiveAction] = useState("");
     const [error, setError] = useState("");
-
-    const [selectedLanguage, setSelectedLanguage] = useState(() => {
-        if (typeof window !== "undefined") {
-            return sessionStorage.getItem("selectedLanguage") || "python";
-        }
-        return "python";
-    });
+    const [selectedLanguage, setSelectedLanguage] = useState("python");
 
     const [codingEligibility, setCodingEligibility] = useState({
         isEligible: true,
@@ -103,73 +69,43 @@ export default function Dashboard() {
         };
     };
 
-    const [user, setUser] = useState(() => {
-        if (typeof window !== "undefined") {
-            const storedUser = localStorage.getItem("user");
-
-            if (storedUser) {
-                try {
-                    return JSON.parse(storedUser);
-                } catch (e) {
-                    console.error("User parse error:", e);
-                }
-            }
-        }
-
-        return null;
-    });
-
-
-
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            try {
-                const storedResume =
-                    sessionStorage.getItem("resumeData");
+        try {
+            const storedResume = sessionStorage.getItem("resumeData");
+            const storedName = sessionStorage.getItem("resumeFileName");
 
-                const storedName =
-                    sessionStorage.getItem("resumeFileName");
-
-                if (storedResume && storedName) {
-                    setExistingResumeName(storedName);
-                    setHasExistingResume(true);
-                    try {
-                        const parsedResume = JSON.parse(storedResume);
-                        const elig = checkSkillsEligibility(parsedResume);
-                        setCodingEligibility({ ...elig, checked: true });
-                    } catch (pe) {
-                        console.error(pe);
-                    }
+            if (storedResume && storedName) {
+                setExistingResumeName(storedName);
+                setHasExistingResume(true);
+                try {
+                    const parsedResume = JSON.parse(storedResume);
+                    const elig = checkSkillsEligibility(parsedResume);
+                    setCodingEligibility({ ...elig, checked: true });
+                } catch (pe) {
+                    console.error(pe);
                 }
-
-                const storedDiff =
-                    sessionStorage.getItem("difficulty");
-
-                if (
-                    storedDiff &&
-                    ["Easy", "Medium", "Hard"].includes(storedDiff)
-                ) {
-                    setDifficulty(storedDiff);
-                }
-
-                const storedUser =
-                    localStorage.getItem("user");
-
-                if (storedUser) {
-                    setUser(JSON.parse(storedUser));
-                }
-            } catch (e) {
-                console.error("Dashboard init error:", e);
             }
-        }, 0);
 
-        return () => clearTimeout(timer);
+            const storedDiff = sessionStorage.getItem("difficulty");
+            if (storedDiff && ["Easy", "Medium", "Hard"].includes(storedDiff)) {
+                setDifficulty(storedDiff);
+            }
+
+            const storedLang = sessionStorage.getItem("selectedLanguage");
+            if (storedLang) {
+                setSelectedLanguage(storedLang);
+            }
+
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+            }
+        } catch (e) {
+            console.error("Dashboard init error:", e);
+        }
     }, []);
-
-
-
-
     const handleFileChange = (event) => {
         const file = event.target.files?.[0];
 
@@ -286,7 +222,24 @@ export default function Dashboard() {
                 }
 
                 sessionStorage.setItem("selectedLanguage", selectedLanguage);
-                setLoadingMessage("Setting up your coding environment...");
+                setLoadingMessage("Generating coding challenge...");
+                try {
+                    const resumeRaw = sessionStorage.getItem("resumeData") || "";
+                    const cData = await startCodingInterview(
+                        currentUser.id,
+                        resumeRaw,
+                        selectedLanguage,
+                        difficulty
+                    );
+                    if (cData?.question) {
+                        sessionStorage.setItem("prefetchedCodingQuestion", JSON.stringify(cData));
+                        console.log("[Dashboard] Pre-fetched coding question OK");
+                    }
+                } catch (cErr) {
+                    console.warn("[Dashboard] Coding pre-fetch error, page will retry:", cErr.message);
+                    sessionStorage.removeItem("prefetchedCodingQuestion");
+                }
+                setLoadingMessage("Launching coding interview...");
                 router.push("/coding-interview");
             } else {
                 // Pre-fetch the first question while showing loading screen (reduces wait on interview page)

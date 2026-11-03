@@ -18,36 +18,37 @@ def evaluate_coding_solution(
     execution_result,
     language
 ):
+    # Extract only concise problem summary to avoid sending massive tokens
+    q_summary = ""
+    if isinstance(question, dict):
+        q_summary = f"{question.get('title', '')}: {question.get('description', '')[:300]}"
+    elif isinstance(question, str):
+        try:
+            parsed = json.loads(question)
+            if isinstance(parsed, dict):
+                q_summary = f"{parsed.get('title', '')}: {parsed.get('description', '')[:300]}"
+            else:
+                q_summary = question[:300]
+        except Exception:
+            q_summary = question[:300]
+    else:
+        q_summary = str(question)[:300]
 
-    prompt = f"""
-You are an expert technical interviewer at a top tech company.
+    code_trimmed = (code or "")[:1500]
+    exec_trimmed = (str(execution_result) or "")[:800]
 
-Evaluate this candidate's coding solution based on algorithmic rigor, problem solving, and test results.
-The testing platform separates visible sample tests from hidden test cases (which test edge cases, constraints, and stress boundaries).
+    prompt = f"""You are an expert coding interviewer. Evaluate this candidate solution concisely.
 
-PROBLEM CONTEXT:
-{question}
-
-PROGRAMMING LANGUAGE:
-{language}
-
-CANDIDATE'S CODE:
+Problem: {q_summary}
+Language: {language}
+Candidate Code:
+```{language}
+{code_trimmed}
 ```
-{code}
-```
-
-TEST SUITE RESULTS (Sample vs. Hidden Cases):
-{execution_result}
-
-Evaluation Guidelines:
-1. Correctness: Base this heavily on how many visible sample tests and hidden test cases passed. If hidden edge cases failed, deduct points and explain why.
-2. Code Quality: Code style, variable names, idiomatic {language}, readability.
-3. Problem Solving: Chosen data structures and algorithmic approach.
-4. Complexity: Accurately identify big-O time and space complexity.
-5. Feedback: Give actionable, constructive critique highlighting what passed and where edge cases or boundary conditions tripped up the candidate.
+Test Suite Results:
+{exec_trimmed}
 
 Return ONLY valid JSON matching this schema:
-
 {{
     "correctness_score": 0,
     "code_quality_score": 0,
@@ -56,17 +57,18 @@ Return ONLY valid JSON matching this schema:
     "time_complexity": "O(?)",
     "space_complexity": "O(?)",
     "strengths": [
-        "strength"
+        "strength 1",
+        "strength 2"
     ],
     "improvements": [
-        "improvement"
+        "improvement 1"
     ],
-    "feedback": "Detailed interviewer feedback explaining how candidate handled both visible sample cases and hidden edge cases."
+    "feedback": "Concise feedback of 5-8 lines explaining correctness, complexity, and edge case handling."
 }}
 
 Scoring:
 0 = very poor / did not run
-10 = production-grade / all sample and hidden tests passed
+10 = production-grade / all tests passed
 """
 
     models_to_try = list(dict.fromkeys([
@@ -85,7 +87,7 @@ Scoring:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an expert coding interviewer. Always return valid JSON."
+                        "content": "You are an expert coding interviewer. Always return valid JSON only."
                     },
                     {
                         "role": "user",
@@ -93,7 +95,8 @@ Scoring:
                     }
                 ],
                 response_format={"type": "json_object"},
-                temperature=0.2
+                temperature=0.2,
+                max_tokens=600
             )
             if response:
                 break
