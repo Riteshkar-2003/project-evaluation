@@ -400,34 +400,44 @@ Return exactly this JSON structure:
     parsed_q = None
 
  
-    try:
-        response = client.chat.completions.create(
-            model=os.getenv("MODEL_NAME"),
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a professional coding interview question generator. "
-                        "Return strictly valid JSON only. Every string value must be validly JSON-escaped. "
-                        "In programming code, escape all inner quotes as \\\" and write newlines as \\n. "
-                        "Never output unescaped raw newlines or quotes inside JSON values."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.2,
-            max_tokens=4096
-        )
-        content = response.choices[0].message.content.strip()
-        parsed_q = safe_parse_json(content)
-    except Exception as api_err:
-        err_msg = str(api_err)
-        print("Groq JSON generation notice (will retry with plain format):", err_msg[:160])
-        parsed_q = None
+    models_to_try = list(dict.fromkeys([
+        os.getenv("MODEL_NAME") or "openai/gpt-oss-20b",
+        "openai/gpt-oss-20b",
+        "qwen/qwen3.8-27b",
+        "openai/gpt-oss-120b"
+    ]))
+
+    for target_model in models_to_try:
+        if parsed_q:
+            break
+        try:
+            response = client.chat.completions.create(
+                model=target_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional coding interview question generator. "
+                            "Return strictly valid JSON only. Every string value must be validly JSON-escaped. "
+                            "In programming code, escape all inner quotes as \\\" and write newlines as \\n. "
+                            "Never output unescaped raw newlines or quotes inside JSON values."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.2,
+                max_tokens=4096
+            )
+            content = response.choices[0].message.content.strip()
+            parsed_q = safe_parse_json(content)
+        except Exception as api_err:
+            err_msg = str(api_err)
+            print(f"Groq question generation on {target_model} notice: {err_msg[:160]}")
+            parsed_q = None
 
   
     if not parsed_q:

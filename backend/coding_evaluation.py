@@ -69,21 +69,40 @@ Scoring:
 10 = production-grade / all sample and hidden tests passed
 """
 
-    response = client.chat.completions.create(
-        model=os.getenv("MODEL_NAME"),
-        messages=[
-            {
-                "role": "system",
-                "content": "You are an expert coding interviewer. Always return valid JSON."
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        response_format={"type": "json_object"},
-        temperature=0.2
-    )
+    models_to_try = list(dict.fromkeys([
+        os.getenv("MODEL_NAME") or "openai/gpt-oss-20b",
+        "openai/gpt-oss-20b",
+        "qwen/qwen3.8-27b",
+        "openai/gpt-oss-120b"
+    ]))
+
+    response = None
+    last_err = None
+    for target_model in models_to_try:
+        try:
+            response = client.chat.completions.create(
+                model=target_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an expert coding interviewer. Always return valid JSON."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.2
+            )
+            if response:
+                break
+        except Exception as e:
+            last_err = e
+            print(f"[WARN] Coding evaluation failed on {target_model}: {e}. Trying fallback model...")
+
+    if not response:
+        raise last_err or Exception("Failed to get coding evaluation from LLM")
 
     content = response.choices[0].message.content.strip()
 

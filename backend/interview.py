@@ -582,6 +582,7 @@ For each answered question include:
 - topic
 - score
 - evaluation
+- correct_answer (the comprehensive ideal answer)
 
 Return ONLY valid JSON.
 
@@ -604,7 +605,8 @@ Use exactly this structure:
             "question": "",
             "topic": "",
             "score": 0,
-            "evaluation": ""
+            "evaluation": "",
+            "correct_answer": ""
         }}
     ]
 }}

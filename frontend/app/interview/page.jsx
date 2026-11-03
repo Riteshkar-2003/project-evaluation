@@ -17,6 +17,9 @@ import {
     Sparkles,
     Brain,
     User,
+    CheckCircle2,
+    AlertCircle,
+    BookOpen,
 } from "lucide-react";
 
 export default function InterviewPage() {
@@ -171,6 +174,11 @@ export default function InterviewPage() {
             setHistory(updatedHistory);
             setEvaluatingAnswer(false);
 
+            // If 10 questions have been answered, interview is complete!
+            if (currentQNum >= 10 || updatedHistory.length >= 10) {
+                return;
+            }
+
             // Automatically generate the next question without showing any "Next Question" button
             setGeneratingNextQuestion(true);
             try {
@@ -186,7 +194,7 @@ export default function InterviewPage() {
                     throw new Error("Backend did not return the next question.");
                 }
 
-                // Allow 2.5 seconds for candidate to view evaluation and synthesis before displaying next question
+                // Allow 3.5 seconds for candidate to view evaluation and synthesis before displaying next question
                 setTimeout(() => {
                     setQuestion(nextData.question);
                     setQuestionNumber((number) => number + 1);
@@ -194,7 +202,7 @@ export default function InterviewPage() {
                     setAnswer("");
                     setEvaluation(null);
                     setGeneratingNextQuestion(false);
-                }, 2500);
+                }, 3500);
             } catch (nextError) {
                 console.error("Auto next question error:", nextError);
                 setGeneratingNextQuestion(false);
@@ -664,6 +672,156 @@ export default function InterviewPage() {
                 </motion.section>
 
                 {/* Evaluation */}
+                <AnimatePresence>
+                    {evaluation && (
+                        <motion.section
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.5 }}
+                            className="mt-6 rounded-2xl sm:rounded-3xl border border-white/80 bg-white/90 p-5 sm:p-7 md:p-8 shadow-xl backdrop-blur-xl"
+                        >
+                            {/* Header */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-200">
+                                        <Brain size={22} />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold uppercase tracking-wider text-violet-600">
+                                                AI Answer Evaluation
+                                            </span>
+                                            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-bold">
+                                                Q{questionNumber}
+                                            </span>
+                                        </div>
+                                        <h3 className="mt-0.5 text-lg sm:text-xl font-bold text-slate-900">
+                                            Performance Assessment
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <div className="rounded-xl border border-indigo-100 bg-indigo-50/80 px-3.5 py-1.5 text-center">
+                                        <span className="text-[10px] uppercase font-semibold text-slate-500 block">
+                                            Next Difficulty
+                                        </span>
+                                        <span className="text-sm font-bold text-indigo-700">
+                                            {evaluation.next_difficulty || difficulty}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 px-5 py-2.5 text-white shadow-md shadow-violet-200">
+                                        <div className="text-center">
+                                            <span className="text-xl font-black">
+                                                {evaluation.score ?? 0}
+                                            </span>
+                                            <span className="text-xs font-medium text-violet-200">
+                                                /10
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Evaluation Feedback */}
+                            {evaluation.evaluation && (
+                                <div className="mb-5 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 sm:p-5">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                                        Interviewer Analysis
+                                    </p>
+                                    <p className="text-xs sm:text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
+                                        {evaluation.evaluation}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Strengths and Weaknesses Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                                {/* Strengths */}
+                                {Array.isArray(evaluation.strengths) && evaluation.strengths.length > 0 && (
+                                    <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/60 p-4 sm:p-5">
+                                        <div className="flex items-center gap-2 mb-3 text-emerald-800 font-bold text-xs uppercase tracking-wider">
+                                            <CheckCircle2 size={16} className="text-emerald-600" />
+                                            <span>Key Strengths</span>
+                                        </div>
+                                        <ul className="space-y-2">
+                                            {evaluation.strengths.map((str, idx) => (
+                                                <li key={idx} className="flex items-start gap-2 text-xs text-emerald-900 leading-relaxed">
+                                                    <span className="text-emerald-600 font-bold">•</span>
+                                                    <span>{str}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Weaknesses */}
+                                {Array.isArray(evaluation.weaknesses) && evaluation.weaknesses.length > 0 && (
+                                    <div className="rounded-2xl border border-amber-200/80 bg-amber-50/60 p-4 sm:p-5">
+                                        <div className="flex items-center gap-2 mb-3 text-amber-800 font-bold text-xs uppercase tracking-wider">
+                                            <AlertCircle size={16} className="text-amber-600" />
+                                            <span>Areas for Improvement</span>
+                                        </div>
+                                        <ul className="space-y-2">
+                                            {evaluation.weaknesses.map((w, idx) => (
+                                                <li key={idx} className="flex items-start gap-2 text-xs text-amber-900 leading-relaxed">
+                                                    <span className="text-amber-600 font-bold">•</span>
+                                                    <span>{w}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Authoritative Reference Answer */}
+                            {evaluation.correct_answer && (
+                                <div className="rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/70 to-violet-50/50 p-4 sm:p-5 mb-5">
+                                    <div className="flex items-center gap-2 mb-2 text-indigo-900 font-bold text-xs uppercase tracking-wider">
+                                        <BookOpen size={16} className="text-indigo-600" />
+                                        <span>Ideal / Ground-Truth Reference Answer</span>
+                                    </div>
+                                    <p className="text-xs sm:text-sm leading-relaxed text-slate-800 whitespace-pre-wrap font-sans">
+                                        {evaluation.correct_answer}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Completion State or Next Question Synthesis Indicator */}
+                            {questionNumber >= 10 || history.length >= 10 ? (
+                                <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 text-center">
+                                    <h4 className="text-base font-bold text-emerald-900">
+                                        Technical Interview Complete! (10/10 Questions Answered)
+                                    </h4>
+                                    <p className="mt-1 text-xs text-emerald-700">
+                                        You have successfully completed the full technical assessment.
+                                    </p>
+                                    <button
+                                        onClick={stopInterview}
+                                        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:from-violet-700 hover:to-indigo-700"
+                                    >
+                                        <span>Generate & View Complete Report</span>
+                                        <ArrowRight size={16} />
+                                    </button>
+                                </div>
+                            ) : (
+                                generatingNextQuestion && (
+                                    <div className="mt-4 rounded-2xl overflow-hidden relative p-4 text-center" style={{ background: "linear-gradient(135deg, #0a0a1f 0%, #0f172a 50%, #0d0a20 100%)" }}>
+                                        <div className="flex items-center justify-center gap-3 text-indigo-200 text-xs sm:text-sm font-semibold">
+                                            <Loader2 size={18} className="animate-spin text-indigo-400" />
+                                            <span>Synthesizing Question #{questionNumber + 1} ({evaluation.next_difficulty || difficulty})...</span>
+                                        </div>
+                                        <p className="text-[11px] text-slate-400 mt-1">
+                                            Adapting to your performance · Loading next question automatically
+                                        </p>
+                                    </div>
+                                )
+                            )}
+                        </motion.section>
+                    )}
+                </AnimatePresence>
                 
 
                 

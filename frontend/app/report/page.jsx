@@ -846,12 +846,26 @@ export default function ReportPage() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-6 border-t border-slate-100 pt-5">
+                                    <div className="mt-5 border-t border-slate-100 pt-4 space-y-3">
+                                        <div>
+                                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                                Interviewer Evaluation:
+                                            </span>
+                                            <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                                                {item.evaluation}
+                                            </p>
+                                        </div>
 
-                                        <p className="text-sm leading-7 text-slate-500">
-                                            {item.evaluation}
-                                        </p>
-
+                                        {item.correct_answer && (
+                                            <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3.5 text-xs text-indigo-950">
+                                                <span className="font-bold uppercase tracking-wider text-indigo-700 block mb-1">
+                                                    Ideal Reference Answer:
+                                                </span>
+                                                <p className="leading-relaxed font-sans whitespace-pre-wrap">
+                                                    {item.correct_answer}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             )
