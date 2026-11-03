@@ -562,7 +562,7 @@ def stop_coding_interview(
     try:
         answers = get_user_coding_answers(user_id)
 
-        if not answers:
+        if len(answers) < 3:
             saved = user_coding_reports.get(str(user_id))
             if saved:
                 return {
@@ -573,7 +573,7 @@ def stop_coding_interview(
 
             raise HTTPException(
                 status_code=400,
-                detail="Please attend and submit at least one coding question before stopping the interview."
+                detail=f"Please attend and submit at least 3 coding questions before stopping the interview. You have completed {len(answers)} question(s)."
             )
 
         meta = user_session_metadata.get(str(user_id), {})

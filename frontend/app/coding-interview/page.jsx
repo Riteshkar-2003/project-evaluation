@@ -874,8 +874,10 @@ const handleKeyDown = (e) => {
     }
 
    
-    if (submittedCount === 0) {
-      alert("Please attend and submit at least one coding question before stopping the interview.");
+    if (submittedCount < 3) {
+      alert(
+        `Please complete at least 3 coding questions before stopping the interview. You have completed ${submittedCount} question(s).`
+      );
       return;
     }
 
@@ -940,11 +942,13 @@ const handleKeyDown = (e) => {
       setError(msg);
 
       if (
-        msg.toLowerCase().includes("at least one") ||
+        msg.toLowerCase().includes("at least") ||
         msg.toLowerCase().includes("no coding answers") ||
         msg.toLowerCase().includes("submit a solution")
       ) {
-        alert("Please attend and submit at least one coding question before stopping the interview.");
+        alert(
+          `Please complete at least 3 coding questions before stopping the interview. You have completed ${submittedCount} question(s).`
+        );
       } else {
         alert(msg);
       }
