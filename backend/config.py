@@ -4,6 +4,9 @@ from langchain_groq import ChatGroq
 
 
 load_dotenv()
+_env_path = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(_env_path):
+    load_dotenv(_env_path)
 
 groq_api_key = os.getenv("GROQ_API_KEY")
 if not groq_api_key:
@@ -11,9 +14,11 @@ if not groq_api_key:
         "GROQ_API_KEY is not found in .env file."
     )
 
+model_name = os.getenv("MODEL_NAME") or "openai/gpt-oss-120b"
+os.environ["MODEL_NAME"] = model_name
 
 llm = ChatGroq(
-    model=os.getenv("MODEL_NAME"),
+    model=model_name,
     temperature=0.7,
     api_key=groq_api_key
 )
