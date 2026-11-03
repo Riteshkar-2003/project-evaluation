@@ -9,7 +9,8 @@ import {
   Mail,
   Lock,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2
 } from "lucide-react";
 
 
@@ -294,7 +295,10 @@ export default function Login() {
         googleButton.click();
       }
 
-      setGoogleLoading(false);
+      // Keep loading spinner active while Google account popup/redirect is pending
+      setTimeout(() => {
+        setGoogleLoading(false);
+      }, 5000);
     }, 100);
   };
 
@@ -579,26 +583,30 @@ export default function Login() {
           <motion.button
             type="button"
             onClick={handleGoogleLogin}
-            disabled={loading}
+            disabled={loading || googleLoading}
             whileHover={
-              !loading
+              !loading && !googleLoading
                 ? { scale: 1.02 }
                 : {}
             }
             whileTap={
-              !loading
+              !loading && !googleLoading
                 ? { scale: 0.98 }
                 : {}
             }
-            className="relative flex w-full items-center justify-center gap-5 rounded-lg bg-white py-3 font-semibold text-slate-700 shadow-lg shadow-violet-500/20 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="relative flex w-full items-center justify-center gap-4 rounded-lg bg-white py-3 font-semibold text-slate-700 shadow-lg shadow-violet-500/20 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-
-            <FcGoogle
-              size={22}
-            />
-            <span>
-              continue with google
-            </span>
+            {googleLoading ? (
+              <>
+                <Loader2 size={20} className="animate-spin text-violet-600" />
+                <span>Connecting with Google...</span>
+              </>
+            ) : (
+              <>
+                <FcGoogle size={22} />
+                <span>continue with google</span>
+              </>
+            )}
           </motion.button>
 
           {/* Hidden Google button container */}

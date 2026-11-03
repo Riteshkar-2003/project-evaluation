@@ -16,6 +16,7 @@ import {
     ArrowRight,
     Sparkles,
     Brain,
+    User,
 } from "lucide-react";
 
 export default function InterviewPage() {
@@ -140,35 +141,70 @@ export default function InterviewPage() {
     };
 
     const submitAnswer = async () => {
-        if (!answer.trim()) {
+        if (!answer.trim() || evaluatingAnswer || generatingNextQuestion) {
             return;
         }
         try {
             setEvaluatingAnswer(true);
+            const currentQNum = questionNumber || (history.length + 1);
             const data = await analyzeAnswer(
                 question,
                 answer,
                 difficulty,
                 null,
-                questionNumber || (history.length + 1)
+                currentQNum
             );
             const newEvaluation = data.evaluation;
+            const nextDiff = newEvaluation?.next_difficulty || difficulty;
+
             setEvaluation(newEvaluation);
-            setDifficulty(
-                newEvaluation.next_difficulty
-            );
-            setHistory((previous) => [
-                ...previous,
+            setDifficulty(nextDiff);
+
+            const updatedHistory = [
+                ...history,
                 {
                     question,
                     answer,
                     evaluation: newEvaluation,
                 },
-            ]);
+            ];
+            setHistory(updatedHistory);
+            setEvaluatingAnswer(false);
+
+            // Automatically generate the next question without showing any "Next Question" button
+            setGeneratingNextQuestion(true);
+            try {
+                const nextData = await getNextQuestion(
+                    resumeData,
+                    updatedHistory,
+                    nextDiff,
+                    newEvaluation,
+                    []
+                );
+
+                if (!nextData?.question) {
+                    throw new Error("Backend did not return the next question.");
+                }
+
+                // Allow 2.5 seconds for candidate to view evaluation and synthesis before displaying next question
+                setTimeout(() => {
+                    setQuestion(nextData.question);
+                    setQuestionNumber((number) => number + 1);
+                    setDifficulty(nextDiff);
+                    setAnswer("");
+                    setEvaluation(null);
+                    setGeneratingNextQuestion(false);
+                }, 2500);
+            } catch (nextError) {
+                console.error("Auto next question error:", nextError);
+                setGeneratingNextQuestion(false);
+                alert(nextError?.message || "Failed to generate next question.");
+            }
         } catch (error) {
             console.error("Submit answer error:", error);
-        } finally {
             setEvaluatingAnswer(false);
+            setGeneratingNextQuestion(false);
+            alert(error?.message || "Failed to evaluate your answer.");
         }
     };
 
@@ -321,6 +357,16 @@ export default function InterviewPage() {
                     </div>
 
                     <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+
+                        <button
+                            type="button"
+                            onClick={() => router.push("/profile")}
+                            className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-50 shadow-sm sm:px-3 sm:py-2 sm:text-sm"
+                            title="Profile & Performance"
+                        >
+                            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-600" />
+                            <span className="hidden sm:inline">Profile</span>
+                        </button>
 
                         <div className="hidden rounded-full border border-violet-200 bg-white/80 px-3 py-1.5 text-xs shadow-sm sm:block sm:px-4 sm:py-2 sm:text-sm">
                             <span className="text-slate-500">Q </span>
@@ -672,6 +718,7 @@ export default function InterviewPage() {
                                 onClick={submitAnswer}
                                 disabled={
                                     evaluatingAnswer ||
+                                    generatingNextQuestion ||
                                     loadingFirstQuestion ||
                                     !answer.trim()
                                 }
@@ -859,32 +906,6 @@ export default function InterviewPage() {
                                 </motion.div>
                             )}
                         </AnimatePresence>
-
-                        <motion.button
-                            onClick={nextQuestion}
-                            disabled={generatingNextQuestion}
-                            whileHover={{
-                                scale: generatingNextQuestion ? 1 : 1.01,
-                            }}
-                            whileTap={{
-                                scale: generatingNextQuestion ? 1 : 0.98,
-                            }}
-                            className={`mt-4 sm:mt-6 w-full rounded-xl sm:rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 sm:px-6 sm:py-4 text-sm sm:text-base font-semibold text-white shadow-lg shadow-violet-200 transition hover:from-violet-500 hover:to-indigo-500 flex items-center justify-center gap-2 ${
-                                generatingNextQuestion ? "opacity-90 ring-2 ring-indigo-400/60 cursor-wait animate-pulse" : "disabled:opacity-50"
-                            }`}
-                        >
-                            {generatingNextQuestion ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin text-white" />
-                                    <span>Generating Next Question...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span>Next Question</span>
-                                    <ArrowRight className="w-4 h-4" />
-                                </>
-                            )}
-                        </motion.button>
                     </motion.section>
                 )}
 

@@ -38,6 +38,7 @@ import {
   ShieldCheck,
   Loader2,
   ChevronDown,
+  User,
 } from "lucide-react";
 
 const SUPPORTED_LANGUAGES = [
@@ -955,6 +956,72 @@ const handleKeyDown = (e) => {
 
   
 
+  if (stopping) {
+    return (
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f8f7ff]">
+        <motion.div
+          className="pointer-events-none fixed -left-32 -top-32 h-96 w-96 rounded-full bg-violet-300/30 blur-3xl"
+          animate={{
+            x: [0, 80, 0],
+            y: [0, 50, 0],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
+        <motion.div
+          className="pointer-events-none fixed -right-32 top-40 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl"
+          animate={{
+            x: [0, -70, 0],
+            y: [0, 60, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
+        <motion.div
+          initial={{
+            opacity: 0,
+            scale: 0.9,
+          }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+          }}
+          className="relative z-10 rounded-3xl border border-white/70 bg-white/80 p-10 text-center shadow-2xl backdrop-blur-xl max-w-md mx-4"
+        >
+          <motion.div
+            animate={{
+              rotate: 360,
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="mx-auto mb-6 h-14 w-14 rounded-full border-4 border-violet-100 border-t-violet-600"
+          />
+
+          <h2 className="text-2xl font-bold text-slate-900">
+            Generating your report...
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-500">
+            AI is analyzing your coding interview performance and evaluating test cases.
+          </p>
+        </motion.div>
+      </main>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen relative overflow-hidden flex items-center justify-center" style={{ background: "#07071a" }}>
@@ -1222,6 +1289,16 @@ const handleKeyDown = (e) => {
 
             
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+
+                <button
+                  type="button"
+                  onClick={() => router.push("/profile")}
+                  className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-50 shadow-sm sm:px-3 sm:py-2 sm:text-sm"
+                  title="Profile & Performance"
+                >
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-600" />
+                  <span className="hidden sm:inline">Profile</span>
+                </button>
 
                 <button
                   onClick={handleStopInterview}

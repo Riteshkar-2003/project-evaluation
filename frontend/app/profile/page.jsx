@@ -30,6 +30,10 @@ import {
   Calendar,
   ChevronRight,
   Check,
+  Gauge,
+  TrendingUp,
+  Zap,
+  Award,
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -231,6 +235,87 @@ export default function ProfilePage() {
 
     return value;
   }
+
+  function parseScoreValue(val) {
+    if (val === null || val === undefined || val === "" || val === "-") return 0;
+    if (typeof val === "string") {
+      if (val.includes("/")) {
+        const parts = val.split("/");
+        const num = parseFloat(parts[0]);
+        const den = parseFloat(parts[1]);
+        if (!isNaN(num) && !isNaN(den) && den > 0) return Math.min(100, Math.round((num / den) * 100));
+      }
+      const clean = parseFloat(val.replace(/[^0-9.]/g, ""));
+      if (isNaN(clean)) return 0;
+      if (clean <= 10) return Math.min(100, Math.round(clean * 10));
+      return Math.min(100, Math.round(clean));
+    }
+    if (typeof val === "number") {
+      if (val <= 10) return Math.min(100, Math.round(val * 10));
+      return Math.min(100, Math.round(val));
+    }
+    return 0;
+  }
+
+  const techOverallScore = parseScoreValue(report?.overall_score);
+  const codingOverallScore = parseScoreValue(codingReport?.overall_score);
+
+  let combinedPerformanceScore = 0;
+  if (hasReport && hasCodingReport) {
+    combinedPerformanceScore = Math.round((techOverallScore + codingOverallScore) / 2);
+  } else if (hasReport) {
+    combinedPerformanceScore = techOverallScore;
+  } else if (hasCodingReport) {
+    combinedPerformanceScore = codingOverallScore;
+  }
+
+  const getPerformanceTier = (score, hasAny) => {
+    if (!hasAny) {
+      return {
+        label: "Ready to Calibrate",
+        desc: "Complete your first interview to generate your live performance rating.",
+        color: "text-slate-600 bg-slate-100 border-slate-200",
+        badge: "bg-slate-100 text-slate-700",
+        gradient: "from-slate-400 to-slate-500",
+      };
+    }
+    if (score >= 85) {
+      return {
+        label: "Expert Mastery",
+        desc: "Exceptional technical proficiency and algorithm problem-solving abilities.",
+        color: "text-emerald-700 bg-emerald-50 border-emerald-200",
+        badge: "bg-emerald-100 text-emerald-800",
+        gradient: "from-emerald-500 to-teal-600",
+      };
+    }
+    if (score >= 70) {
+      return {
+        label: "Strong Proficiency",
+        desc: "Solid technical foundations and dependable coding execution.",
+        color: "text-indigo-700 bg-indigo-50 border-indigo-200",
+        badge: "bg-indigo-100 text-indigo-800",
+        gradient: "from-violet-600 to-indigo-600",
+      };
+    }
+    if (score >= 50) {
+      return {
+        label: "Intermediate Competency",
+        desc: "Good fundamentals with clear opportunities to refine advanced patterns.",
+        color: "text-amber-700 bg-amber-50 border-amber-200",
+        badge: "bg-amber-100 text-amber-800",
+        gradient: "from-amber-500 to-orange-500",
+      };
+    }
+    return {
+      label: "Foundational / Developing",
+      desc: "Focus on continuous practice and core system design concepts.",
+      color: "text-rose-700 bg-rose-50 border-rose-200",
+      badge: "bg-rose-100 text-rose-800",
+      gradient: "from-rose-500 to-red-600",
+    };
+  };
+
+  const performanceTier = getPerformanceTier(combinedPerformanceScore, hasReport || hasCodingReport);
 
   // ==========================================
   // LOGOUT
@@ -596,7 +681,253 @@ export default function ProfilePage() {
 
         </section>
 
-       
+        {/* ================================================= */}
+        {/* PERFORMANCE METER SECTION */}
+        {/* ================================================= */}
+        <motion.section
+          id="performance-meter-section"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mt-10 rounded-3xl border border-white/70 bg-white/75 p-7 shadow-xl backdrop-blur-xl md:p-8"
+        >
+          {/* Section Header */}
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center border-b border-slate-100 pb-6">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-200">
+                  <Gauge size={20} />
+                </span>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Candidate Performance Meter
+                </h2>
+              </div>
+              <p className="mt-1.5 text-sm text-slate-500">
+                Aggregate assessment gauge reflecting evaluated proficiency across technical questioning and coding challenges.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-bold ${performanceTier.color}`}>
+                <Zap size={14} className="fill-current" />
+                <span>{performanceTier.label}</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Meter Cards Grid */}
+          <div className="mt-7 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+            {/* Main Speedometer / Gauge Meter Column */}
+            <div className="lg:col-span-5 rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-50/90 to-white p-6 flex flex-col items-center justify-between text-center relative overflow-hidden shadow-sm">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-500" />
+              
+              <div className="w-full flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <span>Overall Mastery Meter</span>
+                <span className="font-mono">{hasReport || hasCodingReport ? `${combinedPerformanceScore}/100` : "Ready"}</span>
+              </div>
+
+              {/* Speedometer Gauge Visual */}
+              <div className="relative w-64 h-36 my-2 flex items-end justify-center">
+                <svg viewBox="0 0 200 115" className="w-full h-full overflow-visible">
+                  {/* Gauge Arc Track */}
+                  <path
+                    d="M 20 100 A 80 80 0 0 1 180 100"
+                    fill="none"
+                    stroke="#e2e8f0"
+                    strokeWidth="16"
+                    strokeLinecap="round"
+                  />
+                  {/* Gauge Colored Gradient Arc */}
+                  <path
+                    d="M 20 100 A 80 80 0 0 1 180 100"
+                    fill="none"
+                    stroke="url(#meterGradient)"
+                    strokeWidth="16"
+                    strokeLinecap="round"
+                    strokeDasharray="251.2"
+                    strokeDashoffset={251.2 - (251.2 * Math.min(combinedPerformanceScore, 100)) / 100}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                  <defs>
+                    <linearGradient id="meterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#f43f5e" />
+                      <stop offset="40%" stopColor="#f59e0b" />
+                      <stop offset="75%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#10b981" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Gauge Needle */}
+                  <g transform={`rotate(${hasReport || hasCodingReport ? -90 + (combinedPerformanceScore / 100) * 180 : -90}, 100, 100)`} className="transition-transform duration-1000 ease-out">
+                    <line x1="100" y1="100" x2="100" y2="30" stroke="#1e293b" strokeWidth="3.5" strokeLinecap="round" />
+                    <polygon points="97,35 100,24 103,35" fill="#1e293b" />
+                  </g>
+                  {/* Needle Center Pin */}
+                  <circle cx="100" cy="100" r="9" fill="#0f172a" />
+                  <circle cx="100" cy="100" r="4" fill="#a78bfa" />
+                </svg>
+
+                {/* Score Number Display */}
+                <div className="absolute bottom-0 text-center">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                    {hasReport || hasCodingReport ? `${combinedPerformanceScore}%` : "--"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tier Details */}
+              <div className="mt-3 w-full">
+                <p className="text-xs font-medium text-slate-500 leading-relaxed px-4">
+                  {performanceTier.desc}
+                </p>
+
+                {/* Tick Mark Legend */}
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" />0-49% Dev</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" />50-69% Mid</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-500" />70-84% Pro</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />85%+ Expert</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Detailed Performance Meters Breakdown (Technical & Coding) */}
+            <div className="lg:col-span-7 flex flex-col justify-between gap-4">
+
+              {/* Technical Interview Meter */}
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700 font-bold">
+                      <Brain size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Technical Interview Performance
+                      </h3>
+                      <p className="text-[11px] text-slate-500">
+                        Evaluated conceptual clarity, project knowledge, and domain answers
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-violet-700">
+                      {hasReport ? `${techOverallScore}%` : "Not Taken"}
+                    </span>
+                    {hasReport && report.final_level && (
+                      <p className="text-[10px] text-slate-500 font-medium">Level: {report.final_level}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Meter Progress Bar */}
+                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden mb-3">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-600"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${hasReport ? Math.min(techOverallScore, 100) : 0}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                </div>
+
+                {/* Sub Metrics */}
+                {hasReport ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-xs">
+                    <div>
+                      <span className="text-slate-400 text-[10px]">Technical</span>
+                      <p className="font-bold text-slate-800">{displayValue(report.technical_score)}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px]">Skills</span>
+                      <p className="font-bold text-slate-800">{displayValue(report.skills_score)}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px]">Projects</span>
+                      <p className="font-bold text-slate-800">{displayValue(report.projects_score)}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px]">Experience</span>
+                      <p className="font-bold text-slate-800">{displayValue(report.experience_score)}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-400 italic">
+                    Take the 10-question technical interview to unlock this performance gauge.
+                  </p>
+                )}
+              </div>
+
+              {/* Coding Assessment Meter */}
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-bold">
+                      <Code2 size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Coding Assessment Performance
+                      </h3>
+                      <p className="text-[11px] text-slate-500">
+                        Evaluated algorithmic correctness, code quality, and time complexity
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-indigo-700">
+                      {hasCodingReport ? `${codingOverallScore}%` : "Not Taken"}
+                    </span>
+                    {hasCodingReport && codingReport.difficulty && (
+                      <p className="text-[10px] text-slate-500 font-medium">Difficulty: {codingReport.difficulty}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Meter Progress Bar */}
+                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden mb-3">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-teal-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${hasCodingReport ? Math.min(codingOverallScore, 100) : 0}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                </div>
+
+                {/* Sub Metrics */}
+                {hasCodingReport ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-xs">
+                    <div>
+                      <span className="text-slate-400 text-[10px]">Correctness</span>
+                      <p className="font-bold text-slate-800">{displayValue(codingReport.correctness_score)}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px]">Code Quality</span>
+                      <p className="font-bold text-slate-800">{displayValue(codingReport.code_quality_score)}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px]">Problem Solving</span>
+                      <p className="font-bold text-slate-800">{displayValue(codingReport.problem_solving_score)}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px]">Language</span>
+                      <p className="font-bold text-slate-800">{displayValue(codingReport.language)}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-400 italic">
+                    Complete your interactive coding interview to populate this performance gauge.
+                  </p>
+                )}
+              </div>
+
+            </div>
+
+          </div>
+        </motion.section>
+
         {/* ================================================= */}
         {/* TECHNICAL INTERVIEW REPORT */}
         {/* ================================================= */}
