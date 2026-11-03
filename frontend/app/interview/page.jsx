@@ -358,15 +358,7 @@ export default function InterviewPage() {
 
                     <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
-                        <button
-                            type="button"
-                            onClick={() => router.push("/profile")}
-                            className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-50 shadow-sm sm:px-3 sm:py-2 sm:text-sm"
-                            title="Profile & Performance"
-                        >
-                            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-600" />
-                            <span className="hidden sm:inline">Profile</span>
-                        </button>
+                        
 
                         <div className="hidden rounded-full border border-violet-200 bg-white/80 px-3 py-1.5 text-xs shadow-sm sm:block sm:px-4 sm:py-2 sm:text-sm">
                             <span className="text-slate-500">Q </span>
@@ -643,73 +635,7 @@ export default function InterviewPage() {
                                             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                         />
 
-                                        <div className="relative z-10 p-4 sm:p-5">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <div className="flex items-center gap-3 sm:gap-4">
-
-                                                    <div className="flex items-end gap-[3px] h-10 shrink-0">
-                                                        {[0.4, 0.8, 0.55, 1, 0.65, 0.9, 0.45, 0.75, 0.5].map((h, i) => (
-                                                            <motion.div
-                                                                key={i}
-                                                                className="w-1 rounded-full"
-                                                                style={{ background: `hsl(${255 + i * 5}, 80%, 70%)`, minHeight: 4 }}
-                                                                animate={{ scaleY: [h, h * 0.3 + 0.1, h, h * 0.6, h] }}
-                                                                transition={{ duration: 0.8 + i * 0.07, repeat: Infinity, ease: "easeInOut", delay: i * 0.06 }}
-                                                            />
-                                                        ))}
-                                                    </div>
-
-                                                    <div>
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <span className="text-xs sm:text-sm font-bold text-violet-100">
-                                                                Evaluating Answer
-                                                            </span>
-                                                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/25 uppercase">
-                                                                Q#{questionNumber}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-[11px] text-slate-400 mt-1">
-                                                            Scanning technical accuracy · reasoning depth · difficulty calibration
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="relative w-9 h-9 shrink-0">
-                                                    <motion.div
-                                                        className="absolute inset-0 rounded-full border-2 border-violet-500/40 border-t-violet-400"
-                                                        animate={{ rotate: 360 }}
-                                                        transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-                                                    />
-                                                    <motion.div
-                                                        className="absolute inset-1.5 rounded-full border border-indigo-400/50 border-b-indigo-300"
-                                                        animate={{ rotate: -360 }}
-                                                        transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
-                                                    />
-                                                    <div className="absolute inset-3 rounded-full bg-violet-600/40" />
-                                                </div>
-                                            </div>
-
-                                            {/* Multi-step progress dots */}
-                                            <div className="mt-3 flex items-center gap-2">
-                                                {["Parsing", "Scoring", "Calibrating"].map((label, i) => (
-                                                    <motion.div
-                                                        key={label}
-                                                        className="flex items-center gap-1.5"
-                                                        initial={{ opacity: 0, x: -6 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                        transition={{ delay: i * 0.3 }}
-                                                    >
-                                                        <motion.div
-                                                            className="w-1.5 h-1.5 rounded-full bg-violet-400"
-                                                            animate={{ scale: [1, 1.6, 1], opacity: [0.5, 1, 0.5] }}
-                                                            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.35 }}
-                                                        />
-                                                        <span className="text-[10px] text-slate-500 font-mono">{label}</span>
-                                                        {i < 2 && <span className="text-slate-700 text-[10px] ml-1">→</span>}
-                                                    </motion.div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                       
                                     </motion.div>
                                 )}
                             </AnimatePresence>
