@@ -1,6 +1,3 @@
-
-
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -1294,15 +1291,7 @@ const handleKeyDown = (e) => {
             
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
-                <button
-                  type="button"
-                  onClick={() => router.push("/profile")}
-                  className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-50 shadow-sm sm:px-3 sm:py-2 sm:text-sm"
-                  title="Profile & Performance"
-                >
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-600" />
-                  <span className="hidden sm:inline">Profile</span>
-                </button>
+            
 
                 <button
                   onClick={handleStopInterview}
@@ -2041,120 +2030,14 @@ const handleKeyDown = (e) => {
               </motion.button>
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-slate-500 bg-white/70 px-3 py-2 rounded-xl border border-slate-200/60 shadow-xs">
-              <span className="flex items-center gap-1 font-semibold text-blue-700">
-                <Eye className="w-3.5 h-3.5" />
-                Run tests visible cases
-              </span>
-              <span className="text-slate-300">•</span>
-              <span className="flex items-center gap-1 font-semibold text-violet-700">
-                <Lock className="w-3.5 h-3.5" />
-                Submit verifies hidden cases
-              </span>
-            </div>
+            
           </motion.div>
 
          
-          <AnimatePresence>
-            {running && (
-              <motion.div
-                initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                className="mb-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 border border-blue-500/30 shadow-xl shadow-blue-900/20 text-white backdrop-blur-md overflow-hidden relative"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-pulse pointer-events-none" />
-
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
-                        <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
-                      </div>
-                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                      </span>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold tracking-wide text-blue-200">
-                          Executing Code Against Sample Cases...
-                        </span>
-                        <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                          {language}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-300 mt-0.5">
-                        Compiling and running your solution with test inputs in a secured sandbox environment.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-xs text-blue-300/90 bg-blue-900/40 px-3 py-1.5 rounded-lg border border-blue-700/40">
-                    <div className="flex gap-1 items-center">
-                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "300ms" }}></span>
-                    </div>
-                    <span className="font-mono text-[11px]">Testing I/O</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+         
 
         
-          <AnimatePresence>
-            {submitting && (
-              <motion.div
-                initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                className="mb-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-violet-950 via-slate-900 to-indigo-950 border border-violet-500/30 shadow-xl shadow-violet-900/20 text-white backdrop-blur-md overflow-hidden relative"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-500/10 to-transparent animate-pulse pointer-events-none" />
-
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-xl bg-violet-600/20 border border-violet-500/40 flex items-center justify-center text-violet-400">
-                        <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
-                      </div>
-                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-violet-500"></span>
-                      </span>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold tracking-wide text-violet-200">
-                          AI Evaluating All Test Cases & Algorithm...
-                        </span>
-                        <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                          Final Assessment
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-300 mt-0.5">
-                        Evaluating hidden boundary cases, measuring time/space complexity, and computing AI score.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-xs text-violet-300/90 bg-violet-900/40 px-3 py-1.5 rounded-lg border border-violet-700/40">
-                    <div className="flex gap-1 items-center">
-                      <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                      <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                      <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "300ms" }}></span>
-                    </div>
-                    <span className="font-mono text-[11px]">Evaluating</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          
 
 
 

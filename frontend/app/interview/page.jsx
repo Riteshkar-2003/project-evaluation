@@ -535,29 +535,18 @@ export default function InterviewPage() {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                                                 <span className="text-sm sm:text-base font-bold text-violet-100 tracking-wide">
-                                                    Generating Question 1
+                                                    Generating Question 
                                                 </span>
-                                                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-violet-500/25 text-violet-300 border border-violet-400/30">
-                                                    {difficulty}
-                                                </span>
+                                               
                                                 <motion.span
                                                     className="inline-block w-0.5 h-4 bg-violet-400 rounded"
                                                     animate={{ opacity: [1, 0, 1] }}
                                                     transition={{ duration: 0.8, repeat: Infinity }}
                                                 />
                                             </div>
-                                            <p className="text-xs text-slate-400 leading-relaxed">
-                                                Analyzing resume · mapping technical skills · calibrating {difficulty} difficulty
-                                            </p>
+                                            
 
-                                            <div className="mt-3 h-1 rounded-full bg-white/10 overflow-hidden">
-                                                <motion.div
-                                                    className="h-full rounded-full"
-                                                    style={{ background: "linear-gradient(90deg, #7c3aed, #6366f1, #7c3aed)" }}
-                                                    animate={{ x: ["-100%", "100%"] }}
-                                                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                                                />
-                                            </div>
+                                           
                                         </div>
                                     </div>
                                 </div>
