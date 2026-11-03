@@ -120,7 +120,7 @@ def admin_verify_token_post(data: dict):
     import jwt as _jwt
     token = data.get("token", "")
     if not token:
-        raise HTTPException(status_code=401, detail="No token provided")
+        return {"valid": False, "message": "No token provided"}
     try:
         payload = decode_admin_token(token)
         return {
@@ -130,9 +130,9 @@ def admin_verify_token_post(data: dict):
             "role": payload.get("role"),
         }
     except _jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Admin session expired. Please login again.")
+        return {"valid": False, "message": "Admin session expired. Please login again."}
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid admin token")
+        return {"valid": False, "message": "Invalid admin token"}
 
 
 @app.post("/admin/auth/logout")

@@ -401,9 +401,9 @@ Return exactly this JSON structure:
 
  
     models_to_try = list(dict.fromkeys([
-        os.getenv("MODEL_NAME") or "openai/gpt-oss-20b",
-        "openai/gpt-oss-20b",
+        os.getenv("MODEL_NAME") or "qwen/qwen3.8-27b",
         "qwen/qwen3.8-27b",
+        "openai/gpt-oss-20b",
         "openai/gpt-oss-120b"
     ]))
 
@@ -441,32 +441,35 @@ Return exactly this JSON structure:
 
   
     if not parsed_q:
-        try:
-            print("Retrying coding question generation with flexible plain JSON format...")
-            retry_resp = client.chat.completions.create(
-                model=os.getenv("MODEL_NAME"),
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are a professional coding interview question generator. "
-                            "Output ONLY a raw valid JSON object starting with { and ending with }. "
-                            "Do not include markdown codeblocks or preamble text. "
-                            "Escape all double quotes in code as \\\"."
-                        )
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt + "\n\nCRITICAL: Return valid JSON object ONLY. Escape all quotes inside code strings."
-                    }
-                ],
-                temperature=0.2,
-                max_tokens=4096
-            )
-            content = retry_resp.choices[0].message.content.strip()
-            parsed_q = safe_parse_json(content)
-        except Exception as retry_err:
-            print("Retry generation failed:", retry_err)
+        for retry_model in models_to_try:
+            if parsed_q:
+                break
+            try:
+                print(f"Retrying coding question generation with flexible plain JSON on {retry_model}...")
+                retry_resp = client.chat.completions.create(
+                    model=retry_model,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a professional coding interview question generator. "
+                                "Output ONLY a raw valid JSON object starting with { and ending with }. "
+                                "Do not include markdown codeblocks or preamble text. "
+                                "Escape all double quotes in code as \\\"."
+                            )
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt + "\n\nCRITICAL: Return valid JSON object ONLY. Escape all quotes inside code strings."
+                        }
+                    ],
+                    temperature=0.2,
+                    max_tokens=4096
+                )
+                content = retry_resp.choices[0].message.content.strip()
+                parsed_q = safe_parse_json(content)
+            except Exception as retry_err:
+                print(f"Retry generation failed on {retry_model}:", retry_err)
             return get_fallback_question(difficulty=difficulty, language=language)
 
     if not parsed_q:

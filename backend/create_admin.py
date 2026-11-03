@@ -6,7 +6,7 @@ Run with: python create_admin.py
 """
 
 import sys
-sys.path.insert(0, "e:/final_project_1/backend")
+import os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from admin_auth import hash_admin_password
 from database import get_connection

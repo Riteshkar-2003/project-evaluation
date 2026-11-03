@@ -14,13 +14,13 @@ if not groq_api_key:
         "GROQ_API_KEY is not found in .env file."
     )
 
-model_name = os.getenv("MODEL_NAME") or "openai/gpt-oss-20b"
+model_name = os.getenv("MODEL_NAME") or "qwen/qwen3.8-27b"
 os.environ["MODEL_NAME"] = model_name
 
 available_models = [
     model_name,
-    "openai/gpt-oss-20b",
     "qwen/qwen3.8-27b",
+    "openai/gpt-oss-20b",
     "openai/gpt-oss-120b"
 ]
 # Deduplicate while preserving order

@@ -70,9 +70,9 @@ Scoring:
 """
 
     models_to_try = list(dict.fromkeys([
-        os.getenv("MODEL_NAME") or "openai/gpt-oss-20b",
-        "openai/gpt-oss-20b",
+        os.getenv("MODEL_NAME") or "qwen/qwen3.8-27b",
         "qwen/qwen3.8-27b",
+        "openai/gpt-oss-20b",
         "openai/gpt-oss-120b"
     ]))
 
