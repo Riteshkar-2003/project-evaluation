@@ -25,7 +25,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Hide scrollbars for horizontal tab rails on mobile */
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -34,7 +34,7 @@ body {
   scrollbar-width: none;
 }
 
-/* Sleek scrollbar for mobile/tablet code pre blocks */
+
 .code-scroll::-webkit-scrollbar {
   height: 6px;
   width: 6px;

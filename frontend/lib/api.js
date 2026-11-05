@@ -290,9 +290,7 @@ export async function googleLogin(credential) {
     return handleResponse(response);
 }
 
-/* =========================================================
-   CODING INTERVIEW ENDPOINTS
-   ========================================================= */
+
 
 export async function startCodingInterview(
     userId,
@@ -375,9 +373,7 @@ export async function stopCodingInterview(userId) {
     return handleResponse(response);
 }
 
-/* =========================================================
-   USER QUERIES & CONCERNS ENDPOINTS
-   ========================================================= */
+
 
 export async function submitUserQuery(queryData) {
     const response = await apiFetch(`${API_URL}/queries`, {
@@ -395,9 +391,7 @@ export async function getUserQueries(userId) {
     return handleResponse(response);
 }
 
-/* =========================================================
-   ADMIN DASHBOARD ENDPOINTS
-   ========================================================= */
+
 
 export async function getAdminStats() {
     const response = await apiFetch(`${API_URL}/admin/stats`);
@@ -457,9 +451,7 @@ export async function deleteAdminQuery(queryId) {
 }
 
 
-/* =========================================================
-   ADMIN AUTHENTICATION ENDPOINTS
-   ========================================================= */
+
 
 export async function adminLogin(username, password) {
     const response = await apiFetch(`${API_URL}/admin/auth/login`, {

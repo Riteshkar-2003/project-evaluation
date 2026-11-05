@@ -144,17 +144,17 @@ export default function AdminLoginPage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative w-full max-w-md"
       >
-        {/* Card glow border effect */}
+       
         <div className="absolute -inset-px rounded-3xl bg-gradient-to-br from-violet-600/40 via-indigo-600/20 to-transparent blur-sm" />
 
         <div className="relative rounded-3xl border border-gray-800/80 bg-[#11121e]/95 backdrop-blur-2xl shadow-2xl shadow-black/60 overflow-hidden">
-          {/* Top accent line */}
+        
           <div className="h-1 w-full bg-gradient-to-r from-violet-600 via-indigo-500 to-purple-600" />
 
           <div className="p-8 sm:p-10">
            
             <div className="mb-8 text-center">
-              {/* Icon */}
+             
               <motion.div
                 initial={{ scale: 0, rotate: -20 }}
                 animate={{ scale: 1, rotate: 0 }}
@@ -204,7 +204,7 @@ export default function AdminLoginPage() {
 
            
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-              {/* Username */}
+             
               <motion.div
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -234,7 +234,7 @@ export default function AdminLoginPage() {
                 </div>
               </motion.div>
 
-              {/* Password */}
+              
               <motion.div
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -276,7 +276,7 @@ export default function AdminLoginPage() {
                 </div>
               </motion.div>
 
-              {/* Submit Button */}
+             
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -289,7 +289,7 @@ export default function AdminLoginPage() {
                   disabled={loading}
                   className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-900/40 transition hover:from-violet-500 hover:to-indigo-500 hover:shadow-violet-800/50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-[#11121e] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {/* Shimmer */}
+                 
                   <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
                   <span className="relative flex items-center justify-center gap-2.5">

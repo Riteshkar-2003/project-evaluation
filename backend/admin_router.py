@@ -1,15 +1,3 @@
-"""
-admin_router.py
-===============
-Admin Dashboard & User Concerns Management Router.
-
-Provides:
-- Complete oversight of users, technical interview reports, coding submissions,
-  and uploaded candidate resumes.
-- Bi-directional concern/query tracking: user can raise issues/concerns from the
-  application UI, admin can review, update status, and post resolution responses,
-  which are synchronized back to the user's profile.
-"""
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field

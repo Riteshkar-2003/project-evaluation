@@ -41,9 +41,6 @@ export default function ProfilePage() {
 
   const [user, setUser] = useState(null);
 
-  // ==========================================
-  // TECHNICAL INTERVIEW REPORT
-  // ==========================================
 
   const [report, setReport] = useState({
     overall_score: null,
@@ -57,9 +54,7 @@ export default function ProfilePage() {
 
   const [hasReport, setHasReport] = useState(false);
 
-  // ==========================================
-  // CODING INTERVIEW REPORT
-  // ==========================================
+  
 
   const [codingReport, setCodingReport] = useState({
     overall_score: null,
@@ -79,9 +74,7 @@ export default function ProfilePage() {
 
   const [hasCodingReport, setHasCodingReport] = useState(false);
 
-  // ==========================================
-  // USER QUERIES & CONCERNS
-  // ==========================================
+  
   const [queries, setQueries] = useState([]);
   const [loadingQueries, setLoadingQueries] = useState(false);
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false);
@@ -104,9 +97,7 @@ export default function ProfilePage() {
     }
   }
 
-  // ==========================================
-  // LOAD DASHBOARD
-  // ==========================================
+  
 
   async function loadDashboard() {
     try {
@@ -141,7 +132,7 @@ export default function ProfilePage() {
 
       console.log("Logged-in User ID:", userId);
 
-      // Load both report data and raised concerns
+     
       loadUserQueries(userId);
 
       const data = await getProfilePage(userId);
@@ -154,9 +145,7 @@ export default function ProfilePage() {
         return;
       }
 
-      // ==========================================
-      // TECHNICAL REPORT
-      // ==========================================
+      
 
       setHasReport(
         Boolean(data.has_previous_report)
@@ -166,9 +155,7 @@ export default function ProfilePage() {
         setReport(data.report);
       }
 
-      // ==========================================
-      // CODING REPORT
-      // ==========================================
+      
 
       let codingRep = data.coding_report || null;
       let hasCoding = Boolean(data.has_previous_coding_report && data.coding_report);
@@ -220,9 +207,7 @@ export default function ProfilePage() {
     router.push("/dashboard");
   };
 
-  // ==========================================
-  // DISPLAY VALUE
-  // ==========================================
+ 
 
   function displayValue(value) {
     if (
@@ -317,9 +302,7 @@ export default function ProfilePage() {
 
   const performanceTier = getPerformanceTier(combinedPerformanceScore, hasReport || hasCodingReport);
 
-  // ==========================================
-  // LOGOUT
-  // ==========================================
+  
 
   function handleLogout() {
     localStorage.removeItem("user");
@@ -332,9 +315,7 @@ export default function ProfilePage() {
     router.push("/");
   }
 
-  // ==========================================
-  // LOADING
-  // ==========================================
+ 
 
   if (loading) {
     return (
@@ -404,10 +385,7 @@ export default function ProfilePage() {
     );
   }
 
-  // ==========================================
-  // USER NOT FOUND
-  // ==========================================
-
+ 
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f8f7ff]">
@@ -429,16 +407,12 @@ export default function ProfilePage() {
   const firstName =
     user.name?.split(" ")[0] || "User";
 
-  // ==========================================
-  // MAIN UI
-  // ==========================================
+ 
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#f8f7ff]">
 
-      {/* ====================================== */}
-      {/* BACKGROUND */}
-      {/* ====================================== */}
+     
 
       <motion.div
         className="pointer-events-none fixed -left-32 -top-32 h-96 w-96 rounded-full bg-violet-300/30 blur-3xl"
@@ -481,9 +455,7 @@ export default function ProfilePage() {
         }}
       />
 
-      {/* ====================================== */}
-      {/* NAVBAR */}
-      {/* ====================================== */}
+      
 
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -493,8 +465,7 @@ export default function ProfilePage() {
       >
           <div className="mx-auto flex min-h-[64px] w-full max-w-7xl items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 lg:px-8">
 
-            {/* ==================== LOGO ==================== */}
-
+          
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
 
               <motion.div
@@ -504,7 +475,7 @@ export default function ProfilePage() {
                 AI
               </motion.div>
 
-              {/* Platform Name */}
+            
               <div className="min-w-0">
 
                 <h1 className="truncate text-xs font-bold text-slate-900 sm:text-sm md:text-base lg:text-lg">
@@ -520,14 +491,11 @@ export default function ProfilePage() {
             </div>
 
 
-            {/* ==================== USER SECTION ==================== */}
+          
 
             <div className="flex min-w-0 items-center gap-1.5 sm:gap-2 md:gap-3">
 
-              {/* ADMIN DASHBOARD BUTTON – icon-only on mobile, full on md+ */}
-              
-
-              {/* INTERVIEW HISTORY BUTTON – icon-only on mobile, text on sm+ */}
+             
               <button
                 type="button"
                 onClick={() => router.push("/history")}
@@ -541,12 +509,12 @@ export default function ProfilePage() {
 
               <div className="min-w-0 max-w-[90px] text-right sm:max-w-[150px] md:max-w-[220px] lg:max-w-[280px]">
 
-                {/* Username */}
+               
                 <p className="truncate text-[11px] font-bold text-slate-800 sm:text-sm md:text-base">
                   {user?.name || "User"}
                 </p>
 
-                {/* Email */}
+               
                 <p className="hidden truncate text-[9px] text-slate-500 sm:block sm:text-xs md:text-sm">
                   {user?.email || ""}
                 </p>
@@ -554,7 +522,7 @@ export default function ProfilePage() {
               </div>
 
 
-              {/* User Icon */}
+             
 
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -564,7 +532,7 @@ export default function ProfilePage() {
               </motion.div>
 
 
-              {/* Logout */}
+             
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -581,15 +549,11 @@ export default function ProfilePage() {
           </div>
       </motion.header>
 
-      {/* ====================================== */}
-      {/* CONTENT */}
-      {/* ====================================== */}
+     
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
 
-        {/* ====================================== */}
-        {/* HERO */}
-        {/* ====================================== */}
+       
 
         <motion.section
           initial={{
@@ -602,34 +566,34 @@ export default function ProfilePage() {
           }}
           className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-violet-600 to-indigo-600 p-8 text-white shadow-xl shadow-violet-200 md:p-10"
         >
-          {/* Background decoration */}
+         
           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
 
           <div className="absolute -bottom-20 left-1/3 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
 
-          {/* Content */}
+         
           <div className="relative max-w-3xl">
 
-            {/* Badge */}
+           
             <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold backdrop-blur">
               <Sparkles size={16} />
 
               AI INTERVIEW PREPARATION
             </div>
 
-            {/* Heading */}
+           
             <h2 className="mt-5 text-3xl font-extrabold md:text-4xl">
               Welcome back, {firstName}!
             </h2>
 
-            {/* Description */}
+           
             <p className="mt-4 max-w-2xl leading-7 text-violet-100">
               Practice technical and coding interviews with AI
               and receive personalized feedback based on your
               performance.
             </p>
 
-            {/* Start Interview Button */}
+           
             <button
               onClick={handleStartInterview}
               className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-violet-700 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-violet-50 hover:shadow-xl active:translate-y-0"
@@ -641,9 +605,6 @@ export default function ProfilePage() {
           </div>
         </motion.section>
 
-        {/* ====================================== */}
-        {/* STAT CARDS */}
-        {/* ====================================== */}
 
         <section className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -681,9 +642,7 @@ export default function ProfilePage() {
 
         </section>
 
-        {/* ================================================= */}
-        {/* PERFORMANCE METER SECTION */}
-        {/* ================================================= */}
+       
         <motion.section
           id="performance-meter-section"
           initial={{ opacity: 0, y: 30 }}
@@ -691,7 +650,7 @@ export default function ProfilePage() {
           transition={{ duration: 0.6 }}
           className="mt-6 sm:mt-10 rounded-2xl sm:rounded-3xl border border-white/70 bg-white/75 p-4 sm:p-6 md:p-8 shadow-xl backdrop-blur-xl"
         >
-          {/* Section Header */}
+         
           <div className="flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-center border-b border-slate-100 pb-4 sm:pb-6">
             <div>
               <div className="flex items-center gap-2 sm:gap-2.5">
@@ -715,10 +674,10 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Meter Cards Grid — stacks on mobile, side-by-side on lg */}
+         
           <div className="mt-5 sm:mt-7 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
 
-            {/* Main Speedometer / Gauge Meter Column */}
+           
             <div className="lg:col-span-5 rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-50/90 to-white p-4 sm:p-6 flex flex-col items-center justify-between text-center relative overflow-hidden shadow-sm">
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-500" />
               
@@ -727,10 +686,10 @@ export default function ProfilePage() {
                 <span className="font-mono">{hasReport || hasCodingReport ? `${combinedPerformanceScore}/100` : "Ready"}</span>
               </div>
 
-              {/* Speedometer Gauge Visual — responsive size */}
+             
               <div className="relative w-48 h-28 sm:w-64 sm:h-36 my-2 flex items-end justify-center">
                 <svg viewBox="0 0 200 115" className="w-full h-full overflow-visible">
-                  {/* Gauge Arc Track */}
+                  
                   <path
                     d="M 20 100 A 80 80 0 0 1 180 100"
                     fill="none"
@@ -738,7 +697,7 @@ export default function ProfilePage() {
                     strokeWidth="16"
                     strokeLinecap="round"
                   />
-                  {/* Gauge Colored Gradient Arc */}
+                 
                   <path
                     d="M 20 100 A 80 80 0 0 1 180 100"
                     fill="none"
@@ -758,17 +717,17 @@ export default function ProfilePage() {
                     </linearGradient>
                   </defs>
 
-                  {/* Gauge Needle */}
+                 
                   <g transform={`rotate(${hasReport || hasCodingReport ? -90 + (combinedPerformanceScore / 100) * 180 : -90}, 100, 100)`} className="transition-transform duration-1000 ease-out">
                     <line x1="100" y1="100" x2="100" y2="30" stroke="#1e293b" strokeWidth="3.5" strokeLinecap="round" />
                     <polygon points="97,35 100,24 103,35" fill="#1e293b" />
                   </g>
-                  {/* Needle Center Pin */}
+                  
                   <circle cx="100" cy="100" r="9" fill="#0f172a" />
                   <circle cx="100" cy="100" r="4" fill="#a78bfa" />
                 </svg>
 
-                {/* Score Number Display */}
+               
                 <div>
                   <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
                     {hasReport || hasCodingReport ? `${combinedPerformanceScore}%` : "--"}
@@ -776,13 +735,13 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Tier Details */}
+              
               <div className="mt-2 sm:mt-3 w-full">
                 <p className="text-xs font-medium text-slate-500 leading-relaxed px-2 sm:px-4">
                   {performanceTier.desc}
                 </p>
 
-                {/* Tick Mark Legend */}
+               
                 <div className="mt-3 sm:mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-2 text-[10px] font-mono text-slate-400">
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />0–49% Dev</span>
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />50–69% Mid</span>
@@ -792,10 +751,10 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Detailed Performance Meters Breakdown (Technical & Coding) */}
+           
             <div className="lg:col-span-7 flex flex-col justify-between gap-3 sm:gap-4">
 
-              {/* Technical Interview Meter */}
+              
               <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs">
                 <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-3 mb-3">
                   <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
@@ -822,7 +781,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Meter Progress Bar */}
+                
                 <div className="h-2.5 sm:h-3 w-full rounded-full bg-slate-100 overflow-hidden mb-3">
                   <motion.div
                     className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-600"
@@ -832,7 +791,7 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                {/* Sub Metrics */}
+                
                 {hasReport ? (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-xs">
                     <div>
@@ -859,7 +818,7 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {/* Coding Assessment Meter */}
+              
               <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs">
                 <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-3 mb-3">
                   <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
@@ -886,7 +845,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Meter Progress Bar */}
+               
                 <div className="h-2.5 sm:h-3 w-full rounded-full bg-slate-100 overflow-hidden mb-3">
                   <motion.div
                     className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-teal-500"
@@ -896,7 +855,7 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                {/* Sub Metrics */}
+               
                 {hasCodingReport ? (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-xs">
                     <div>
@@ -928,9 +887,7 @@ export default function ProfilePage() {
           </div>
         </motion.section>
 
-        {/* ================================================= */}
-        {/* TECHNICAL INTERVIEW REPORT */}
-        {/* ================================================= */}
+       
 
         <ReportSection
           title="Previous Technical Interview Report"
@@ -944,9 +901,7 @@ export default function ProfilePage() {
 
           {!hasReport ? (
 
-            /* ============================================= */
-            /* NO TECHNICAL INTERVIEW */
-            /* ============================================= */
+           
 
             <EmptyReport
               icon={Brain}
@@ -960,9 +915,7 @@ export default function ProfilePage() {
 
           ) : (
 
-            /* ============================================= */
-            /* TECHNICAL REPORT */
-            /* ============================================= */
+           
 
             <>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -1028,10 +981,7 @@ export default function ProfilePage() {
 
         </ReportSection>
 
-        {/* ================================================= */}
-        {/* CODING INTERVIEW REPORT */}
-        {/* ================================================= */}
-
+       
         <ReportSection
           title="Previous Coding Interview Report"
           subtitle={
@@ -1044,10 +994,7 @@ export default function ProfilePage() {
 
           {!hasCodingReport ? (
 
-            /* ============================================= */
-            /* NO CODING INTERVIEW */
-            /* ============================================= */
-
+           
             <EmptyReport
               icon={Code2}
               title="No Coding Interview Yet"
@@ -1065,10 +1012,7 @@ export default function ProfilePage() {
 
           ) : (
 
-            /* ============================================= */
-            /* CODING REPORT */
-            /* ============================================= */
-
+            
             <>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -1151,9 +1095,7 @@ export default function ProfilePage() {
 
         </ReportSection>
 
-        {/* ====================================== */}
-        {/* CONCERNS & USER QUERIES SECTION */}
-        {/* ====================================== */}
+       
         <motion.section
           id="concerns-section"
           initial={{ opacity: 0, y: 30 }}
@@ -1161,7 +1103,7 @@ export default function ProfilePage() {
           transition={{ duration: 0.6 }}
           className="mt-10 rounded-3xl border border-white/70 bg-white/75 p-7 shadow-xl backdrop-blur-xl md:p-8"
         >
-          {/* Header */}
+        
           <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center border-b border-slate-100 pb-5">
             <div>
               <div className="flex items-center gap-2">
@@ -1200,7 +1142,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Filter Pills */}
+          
           {queries.length > 0 && (
             <div className="mb-6 flex flex-wrap items-center gap-2">
               {[
@@ -1227,7 +1169,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Queries List or Empty State */}
+          
           {queries.length === 0 ? (
             <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/60 to-indigo-50/60 p-8 text-center sm:p-10">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-violet-600 shadow-md">
@@ -1269,7 +1211,7 @@ export default function ProfilePage() {
                             : "border-slate-200 bg-white"
                         }`}
                     >
-                      {/* Top Bar of Card */}
+                     
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-5 py-3.5">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-mono text-xs font-bold text-violet-700">
@@ -1290,7 +1232,7 @@ export default function ProfilePage() {
                           </span>
                         </div>
 
-                        {/* Status Badge */}
+                       
                         <div className="flex items-center gap-2">
                           {isResolved ? (
                             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
@@ -1311,7 +1253,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      {/* Content Body */}
+                     
                       <div className="p-5 sm:p-6 space-y-4">
                         <div>
                           <h4 className="text-base font-bold text-slate-900 sm:text-lg">
@@ -1326,7 +1268,7 @@ export default function ProfilePage() {
                           </div>
                         </div>
 
-                        {/* Official Admin Response Box */}
+                        
                         {q.admin_response ? (
                           <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/70 to-teal-50/50 p-4 sm:p-5">
                             <div className="flex items-center justify-between gap-2 border-b border-emerald-200/60 pb-2.5">
@@ -1366,7 +1308,7 @@ export default function ProfilePage() {
 
       </div>
 
-      {/* Query Submission Modal */}
+      
       <UserQueryModal
         isOpen={isQueryModalOpen}
         onClose={() => setIsQueryModalOpen(false)}

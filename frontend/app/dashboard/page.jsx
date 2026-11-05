@@ -43,14 +43,14 @@ export default function Dashboard() {
     });
 
     const checkSkillsEligibility = (rdata, backendElig = null) => {
-        // 1. If backend already checked and approved coding eligibility, honor it directly
+       
         if (backendElig && typeof backendElig.is_eligible === "boolean") {
             return {
                 isEligible: backendElig.is_eligible,
                 langs: backendElig.eligible_languages || [],
             };
         }
-        // 2. Check sessionStorage for previously saved backend eligibility
+        
         if (typeof window !== "undefined") {
             try {
                 const saved = sessionStorage.getItem("codingEligibility");
@@ -73,7 +73,7 @@ export default function Dashboard() {
                 langs: rdata.coding_eligibility.eligible_languages || [],
             };
         }
-        // 3. Deep search full resume JSON string across all sections
+       
         const text = (typeof rdata === "string" ? rdata : JSON.stringify(rdata)).toLowerCase();
         const detected = [];
         if (/\bpython\b/.test(text)) detected.push("Python");
@@ -272,7 +272,7 @@ export default function Dashboard() {
                 setLoadingMessage("Launching coding interview...");
                 router.push("/coding-interview");
             } else {
-                // Pre-fetch the first question while showing loading screen (reduces wait on interview page)
+               
                 setLoadingMessage("Preparing your first interview question...");
                 try {
                     const resumeForQ = currentResumeData || JSON.parse(sessionStorage.getItem("resumeData") || "{}");
@@ -302,10 +302,6 @@ export default function Dashboard() {
 
     return (
         <main className="relative min-h-screen w-full overflow-x-hidden bg-[#f8f7ff] text-slate-900">
-
-            {/* ======================================================
-                FULL-PAGE INTERVIEW LOADING OVERLAY
-            ====================================================== */}
             <AnimatePresence>
                 {loading && (
                     <motion.div
@@ -316,7 +312,7 @@ export default function Dashboard() {
                         transition={{ duration: 0.25 }}
                         className="fixed inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden bg-[#f8f7ff]"
                     >
-                        {/* background blobs */}
+                       
                         <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-violet-300/30 blur-3xl" />
                         <div className="pointer-events-none absolute -right-32 top-40 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl" />
                         <div className="pointer-events-none absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-purple-300/20 blur-3xl" />
@@ -327,7 +323,7 @@ export default function Dashboard() {
                             transition={{ duration: 0.4, delay: 0.1 }}
                             className="relative z-10 flex flex-col items-center rounded-3xl border border-white/70 bg-white/85 px-10 py-12 text-center shadow-2xl backdrop-blur-xl sm:px-16 sm:py-14"
                         >
-                            {/* Animated AI ring */}
+                           
                             <div className="relative mb-7 h-24 w-24">
                                 <motion.div
                                     className="absolute inset-0 rounded-full border-4 border-violet-100 border-t-violet-600"
@@ -358,7 +354,7 @@ export default function Dashboard() {
                                 {loadingMessage}
                             </motion.p>
 
-                            {/* Progress dots */}
+                          
                             <div className="mt-7 flex items-center gap-2">
                                 {[0, 1, 2].map((i) => (
                                     <motion.span

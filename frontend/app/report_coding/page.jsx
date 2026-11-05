@@ -1,431 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { useRouter } from "next/navigation";
-
-// export default function CodingReportPage() {
-
-//   const router = useRouter();
-
-//   const [report, setReport] =
-//     useState(null);
-
-//   const [loading, setLoading] =
-//     useState(true);
-
-
-//   useEffect(() => {
-
-//     try {
-
-//       const storedReport =
-//         sessionStorage.getItem(
-//           "codingReport"
-//         );
-
-
-//       if (!storedReport) {
-
-//         router.push(
-//           "/coding-interview"
-//         );
-
-//         return;
-//       }
-
-
-//       const parsedReport =
-//         JSON.parse(storedReport);
-
-
-//       console.log(
-//         "CODING REPORT:",
-//         parsedReport
-//       );
-
-
-//       /*
-//        * Backend response:
-//        *
-//        * {
-//        *   success: true,
-//        *   user_id: 1,
-//        *   report: {...}
-//        * }
-//        */
-
-//       setReport(
-//         parsedReport.report ||
-//         parsedReport
-//       );
-
-//     } catch (error) {
-
-//       console.error(
-//         "Report loading error:",
-//         error
-//       );
-
-//     } finally {
-
-//       setLoading(false);
-//     }
-
-//   }, [router]);
-
-
-//   // =====================================================
-//   // LOADING
-//   // =====================================================
-
-//   if (loading) {
-
-//     return (
-
-//       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-
-//         <p className="text-lg">
-//           Loading your report...
-//         </p>
-
-//       </div>
-
-//     );
-//   }
-
-
-//   if (!report) {
-//     return null;
-//   }
-
-
-//   return (
-
-//     <div className="min-h-screen bg-slate-50 p-6">
-
-//       <div className="max-w-6xl mx-auto">
-
-
-//         {/* =================================================
-//             HEADER
-//         ================================================= */}
-
-//         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-
-//           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-
-//             <div>
-
-//               <h1 className="text-3xl font-bold">
-//                 Coding Interview Report
-//               </h1>
-
-//               <p className="text-gray-500 mt-2">
-//                 AI-generated evaluation of your coding interview
-//               </p>
-
-//             </div>
-
-
-//             <button
-//               onClick={() =>
-//                 router.push(
-//                   "/dashboard"
-//                 )
-//               }
-//               className="px-5 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-xl transition shadow-sm"
-//             >
-//               Back to Dashboard
-//             </button>
-
-//           </div>
-
-//         </div>
-
-
-//         {/* =================================================
-//             SCORE CARDS
-//         ================================================= */}
-
-//         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-
-
-//           <Score
-//             title="Overall"
-//             value={
-//               report.overall_score
-//             }
-//           />
-
-
-//           <Score
-//             title="Correctness"
-//             value={
-//               report.correctness_score
-//             }
-//           />
-
-
-//           <Score
-//             title="Code Quality"
-//             value={
-//               report.code_quality_score
-//             }
-//           />
-
-
-//           <Score
-//             title="Explanation"
-//             value={
-//               report.explanation_score
-//             }
-//           />
-
-
-//           <Score
-//             title="Problem Solving"
-//             value={
-//               report.problem_solving_score
-//             }
-//           />
-
-//         </div>
-
-
-//         {/* =================================================
-//             COMPLEXITY
-//         ================================================= */}
-
-//         <div className="bg-white rounded-2xl shadow-sm p-6 mt-6">
-
-//           <h2 className="text-2xl font-bold">
-//             Complexity Analysis
-//           </h2>
-
-
-//           <div className="grid md:grid-cols-2 gap-4 mt-5">
-
-
-//             <div className="bg-gray-50 rounded-xl p-5">
-
-//               <p className="text-gray-500">
-//                 Time Complexity
-//               </p>
-
-//               <p className="text-xl font-bold mt-2">
-//                 {report.time_complexity ||
-//                   "Not available"}
-//               </p>
-
-//             </div>
-
-
-//             <div className="bg-gray-50 rounded-xl p-5">
-
-//               <p className="text-gray-500">
-//                 Space Complexity
-//               </p>
-
-//               <p className="text-xl font-bold mt-2">
-//                 {report.space_complexity ||
-//                   "Not available"}
-//               </p>
-
-//             </div>
-
-//           </div>
-
-//         </div>
-
-
-//         {/* =================================================
-//             FEEDBACK
-//         ================================================= */}
-
-//         <div className="bg-white rounded-2xl shadow-sm p-6 mt-6">
-
-//           <h2 className="text-2xl font-bold">
-//             AI Feedback
-//           </h2>
-
-
-//           <p className="text-gray-600 mt-4 leading-7 whitespace-pre-line">
-
-//             {report.feedback ||
-//               "No feedback available."}
-
-//           </p>
-
-//         </div>
-
-
-//         {/* =================================================
-//             STRENGTHS
-//         ================================================= */}
-
-//         <div className="bg-white rounded-2xl shadow-sm p-6 mt-6">
-
-//           <h2 className="text-2xl font-bold">
-//             Strengths
-//           </h2>
-
-
-//           {Array.isArray(
-//             report.strengths
-//           ) &&
-//           report.strengths.length > 0 ? (
-
-//             <ul className="list-disc ml-6 mt-4 space-y-2">
-
-//               {report.strengths.map(
-//                 (item, index) => (
-
-//                   <li
-//                     key={index}
-//                     className="text-gray-700"
-//                   >
-//                     {item}
-//                   </li>
-
-//                 )
-//               )}
-
-//             </ul>
-
-//           ) : (
-
-//             <p className="text-gray-500 mt-4">
-//               No strengths available.
-//             </p>
-
-//           )}
-
-//         </div>
-
-
-//         {/* =================================================
-//             IMPROVEMENTS
-//         ================================================= */}
-
-//         <div className="bg-white rounded-2xl shadow-sm p-6 mt-6">
-
-//           <h2 className="text-2xl font-bold">
-//             Areas for Improvement
-//           </h2>
-
-
-//           {Array.isArray(
-//             report.improvements
-//           ) &&
-//           report.improvements.length > 0 ? (
-
-//             <ul className="list-disc ml-6 mt-4 space-y-2">
-
-//               {report.improvements.map(
-//                 (item, index) => (
-
-//                   <li
-//                     key={index}
-//                     className="text-gray-700"
-//                   >
-//                     {item}
-//                   </li>
-
-//                 )
-//               )}
-
-//             </ul>
-
-//           ) : (
-
-//             <p className="text-gray-500 mt-4">
-//               No improvement suggestions available.
-//             </p>
-
-//           )}
-
-//         </div>
-
-
-//         {/* =================================================
-//             BUTTONS
-//         ================================================= */}
-
-//         <div className="flex flex-wrap gap-4 mt-6 mb-10">
-
-
-//           <button
-//             onClick={() => {
-
-//               sessionStorage.removeItem(
-//                 "codingReport"
-//               );
-
-//               router.push(
-//                 "/coding-interview"
-//               );
-
-//             }}
-//             className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl"
-//           >
-//             Start New Interview
-//           </button>
-
-
-//           <button
-//             onClick={() =>
-//               router.push(
-//                 "/dashboard"
-//               )
-//             }
-//             className="px-6 py-3 bg-white hover:bg-slate-50 border border-gray-300 font-semibold rounded-xl text-slate-700 transition"
-//           >
-//             Back to Dashboard
-//           </button>
-
-//         </div>
-
-//       </div>
-
-//     </div>
-//   );
-// }
-
-
-// /* =========================================================
-//    SCORE COMPONENT
-// ========================================================= */
-
-// function Score({
-//   title,
-//   value
-// }) {
-
-//   return (
-
-//     <div className="bg-white rounded-2xl shadow-sm p-5">
-
-//       <p className="text-gray-500">
-//         {title}
-//       </p>
-
-
-//       <p className="text-3xl font-bold mt-2">
-
-//         {value ?? 0}/10
-
-//       </p>
-
-//     </div>
-
-//   );
-// }
-
-
-
-
-
-
 
 "use client";
 
@@ -476,9 +48,7 @@ export default function CodingReportPage() {
     }
   }, [router]);
 
-  // =========================================================
-  // LOADING
-  // =========================================================
+ 
 
   if (loading) {
     return (
@@ -545,9 +115,7 @@ export default function CodingReportPage() {
     );
   }
 
-  // =========================================================
-  // SCORES
-  // =========================================================
+ 
 
   const scores = [
     {
@@ -581,9 +149,7 @@ export default function CodingReportPage() {
     <main className="relative min-h-screen overflow-hidden bg-[#f8f7ff] text-slate-900">
       <BackgroundBlobs />
 
-      {/* =====================================================
-          NAVBAR
-      ===================================================== */}
+    
 
       <motion.header
         initial={{ opacity: 0, y: -30 }}
@@ -619,14 +185,10 @@ export default function CodingReportPage() {
         </div>
       </motion.header>
 
-      {/* =====================================================
-          MAIN CONTENT
-      ===================================================== */}
+     
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-        {/* ===================================================
-            PAGE INTRO
-        =================================================== */}
+       
 
         <motion.div
           initial={{ opacity: 0, y: 25 }}
@@ -659,10 +221,7 @@ export default function CodingReportPage() {
           </p>
         </motion.div>
 
-        {/* ===================================================
-            HERO SCORE CARD
-        =================================================== */}
-
+       
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -695,14 +254,14 @@ export default function CodingReportPage() {
                 {report.difficulty || "Completed"}
               </h2>
 
-              {/* Feedback — clamped to 6 lines max */}
+             
               <p className="mt-3 sm:mt-4 text-sm leading-6 text-slate-500 line-clamp-6">
                 {report.feedback ||
                   "Your coding interview has been evaluated by the AI system."}
               </p>
             </div>
 
-            {/* SCORE CIRCLE */}
+           
 
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -722,10 +281,6 @@ export default function CodingReportPage() {
             </motion.div>
           </div>
         </motion.section>
-
-        {/* ===================================================
-            SCORE CARDS
-        =================================================== */}
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {scores.map((item, index) => {
@@ -782,9 +337,6 @@ export default function CodingReportPage() {
           })}
         </div>
 
-        {/* ===================================================
-            CODE DETAILS
-        =================================================== */}
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           <InfoCard
@@ -820,9 +372,7 @@ export default function CodingReportPage() {
           </InfoCard>
         </div>
 
-        {/* ===================================================
-            COMPLEXITY ANALYSIS
-        =================================================== */}
+       
 
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -861,10 +411,7 @@ export default function CodingReportPage() {
           </div>
         </motion.section>
 
-        {/* ===================================================
-            FEEDBACK
-        =================================================== */}
-
+       
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -902,12 +449,10 @@ export default function CodingReportPage() {
           </div>
         </motion.section>
 
-        {/* ===================================================
-            STRENGTHS + IMPROVEMENTS
-        =================================================== */}
+      
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          {/* STRENGTHS */}
+        
 
           <motion.section
             initial={{ opacity: 0, x: -30 }}
@@ -959,7 +504,7 @@ export default function CodingReportPage() {
             </div>
           </motion.section>
 
-          {/* IMPROVEMENTS */}
+        
 
           <motion.section
             initial={{ opacity: 0, x: 30 }}
@@ -1012,9 +557,7 @@ export default function CodingReportPage() {
           </motion.section>
         </div>
 
-        {/* ===================================================
-            ACTION BUTTONS
-        =================================================== */}
+      
 
         <motion.div
           initial={{ opacity: 0, y: 25 }}
@@ -1051,9 +594,7 @@ export default function CodingReportPage() {
 }
 
 
-// =========================================================
-// BACKGROUND BLOBS
-// =========================================================
+
 
 function BackgroundBlobs() {
   return (
@@ -1103,9 +644,7 @@ function BackgroundBlobs() {
 }
 
 
-// =========================================================
-// INFO CARD
-// =========================================================
+
 
 function InfoCard({ icon, title, subtitle, children }) {
   return (
@@ -1137,9 +676,7 @@ function InfoCard({ icon, title, subtitle, children }) {
 }
 
 
-// =========================================================
-// SCORE BAR
-// =========================================================
+
 
 function ScoreBar({ label, score }) {
   const value = Number(score) || 0;
@@ -1171,9 +708,7 @@ function ScoreBar({ label, score }) {
 }
 
 
-// =========================================================
-// COMPLEXITY CARD
-// =========================================================
+
 
 function ComplexityCard({ icon, title, value }) {
   return (

@@ -1,15 +1,4 @@
-"""
-code_executor.py
-================
-Robust multi-language code execution engine supporting both Judge0 API and
-local sandboxed execution for Python, JavaScript (Node.js), Java, C, and C++.
 
-Execution strategy:
-1. If Judge0 is reachable at JUDGE0_URL, code submissions are securely routed to Judge0.
-2. If Judge0 is unreachable (Docker offline or network down), execution automatically
-   and transparently falls back to the host's local execution engine with automatic
-   toolchain discovery (Python, Node.js, OpenJDK, GCC/G++/Clang).
-"""
 
 import asyncio
 import base64

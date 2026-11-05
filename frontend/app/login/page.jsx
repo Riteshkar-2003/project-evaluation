@@ -82,9 +82,7 @@ export default function Login() {
         window.location.origin
       );
 
-      // ==========================================
-      // GOOGLE ID TOKEN INITIALIZATION
-      // ==========================================
+      
       window.google.accounts.id.initialize({
         client_id: clientId,
 
@@ -103,8 +101,7 @@ export default function Login() {
             !!response?.credential
           );
 
-          // IMPORTANT
-          // Google MUST return an ID token
+         
           if (!response?.credential) {
             console.error(
               "Google did not return credential"
@@ -125,8 +122,7 @@ export default function Login() {
               "Sending credential to backend..."
             );
 
-            // IMPORTANT:
-            // Pass ONLY response.credential
+            
             const result = await googleLogin(
               response.credential
             );
@@ -142,7 +138,7 @@ export default function Login() {
               );
             }
 
-            // Save user
+           
             localStorage.setItem(
               "user",
               JSON.stringify(result.user)
@@ -179,9 +175,7 @@ export default function Login() {
       );
     };
 
-    // ==========================================
-    // LOAD GOOGLE SCRIPT
-    // ==========================================
+    
     if (window.google) {
       initializeGoogle();
       return;
@@ -227,9 +221,7 @@ export default function Login() {
     };
   }, [router]);
 
-  // ==========================================
-  // GOOGLE LOGIN BUTTON
-  // ==========================================
+ 
   const handleGoogleLogin = () => {
     setError("");
 
@@ -242,15 +234,7 @@ export default function Login() {
 
     setGoogleLoading(true);
 
-    /*
-     * Use Google's ID-token button flow.
-     *
-     * We do NOT use googleButtonRef.
-     *
-     * The Google button is rendered into the
-     * element with id="google-login-button".
-     */
-
+   
     const container =
       document.getElementById(
         "google-login-button"
@@ -266,7 +250,7 @@ export default function Login() {
       return;
     }
 
-    // Clear previous Google button
+   
     container.innerHTML = "";
 
     window.google.accounts.id.renderButton(
@@ -281,10 +265,7 @@ export default function Login() {
       }
     );
 
-    /*
-     * Automatically click Google's generated
-     * button after rendering.
-     */
+    
     setTimeout(() => {
       const googleButton =
         container.querySelector(
@@ -295,7 +276,7 @@ export default function Login() {
         googleButton.click();
       }
 
-      // Keep loading spinner active while Google account popup/redirect is pending
+     
       setTimeout(() => {
         setGoogleLoading(false);
       }, 5000);
@@ -395,96 +376,13 @@ export default function Login() {
           )}
 
 
-          {/* <form
-            onSubmit={handleLogin}
-            className="mt-6 space-y-5"
-          >
-
-
-            <div className="relative ">
-              <label
-                htmlFor="email"
-                className="text-sm font-medium text-slate-900"
-              >
-                Email
-              </label>
-
-              <Mail
-                  size={19}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-
-              
-
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                autoComplete="email"
-                className="mt-2 w-full rounded-lg border bg-white border-slate-300 px-4 py-3 text-slate-800 placeholder-slate-500 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-                required
-              />
-            </div>
-
-
-            <div>
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-slate-900"
-              >
-                Password
-              </label>
-
-              <Lock
-                  size={19}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-500 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-                required
-              />
-
-
-              <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-violet-600"
-                >
-                  {showPassword ? (
-                    <EyeOff size={19} />
-                  ) : (
-                    <Eye size={19} />
-                  )}
-                </button>
-            </div>
-
-
-            <motion.button
-              type="submit"
-              disabled={loading}
-              whileHover={!loading ? { scale: 1.02 } : {}}
-              whileTap={!loading ? { scale: 0.98 } : {}}
-              className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 py-3 font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:from-violet-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? "Logging in..." : "Login"}
-            </motion.button>
-          </form> */}
-
+          
 
 
 
           <form onSubmit={handleLogin} className="mt-6 space-y-5">
 
-            {/* Email */}
+           
             <div>
               <label
                 htmlFor="email"
@@ -513,7 +411,7 @@ export default function Login() {
             </div>
 
 
-            {/* Password */}
+       
             <div>
               <label
                 htmlFor="password"
@@ -555,7 +453,7 @@ export default function Login() {
             </div>
 
 
-            {/* Login Button */}
+       
             <motion.button
               type="submit"
               disabled={loading}
@@ -609,7 +507,7 @@ export default function Login() {
             )}
           </motion.button>
 
-          {/* Hidden Google button container */}
+          
           <div
             id="google-login-button"
             style={{

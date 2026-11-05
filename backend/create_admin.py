@@ -1,10 +1,3 @@
-"""
-create_admin.py
----------------
-One-time utility script to create a new admin user directly in the database.
-Run with: python create_admin.py
-"""
-
 import sys
 import os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 

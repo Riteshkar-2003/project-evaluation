@@ -79,7 +79,7 @@ export default function ReportPage() {
                     setLoading(false);
                 }
 
-                // Persist report in background to prevent delaying report view
+              
                 saveReport(userId, generatedReport)
                     .then((saveData) => {
                         console.log("REPORT SAVED:", saveData);
@@ -92,7 +92,7 @@ export default function ReportPage() {
                     "Report error:",
                     error
                 );
-                // Emergency client-side report fallback so candidate always sees their report
+               
                 try {
                     const storedHist = sessionStorage.getItem("interviewHistory");
                     const hist = storedHist ? JSON.parse(storedHist) : [];
@@ -349,7 +349,7 @@ export default function ReportPage() {
             >
                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
 
-                    {/* Logo + Title */}
+                 
                     <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-xs font-black text-white shadow-lg shadow-violet-200 sm:h-10 sm:w-10 sm:text-sm">
                             AI
@@ -382,7 +382,7 @@ export default function ReportPage() {
 
             <main className="relative z-10 mx-auto max-w-6xl px-6 py-12">
 
-                {/* PAGE INTRO */}
+              
 
                 <motion.div
                     initial={{
@@ -437,7 +437,7 @@ export default function ReportPage() {
                 >
                     <div className="flex flex-col justify-between gap-10 md:flex-row md:items-center">
 
-                        {/* LEFT */}
+                     
 
                         <div className="max-w-2xl">
 

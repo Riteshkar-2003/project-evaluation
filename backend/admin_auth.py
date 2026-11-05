@@ -1,13 +1,4 @@
-"""
-admin_auth.py
-=============
-Admin authentication module — completely isolated from regular user auth.
 
-Provides:
-- Admin login with username/password verification against admin_users table
-- JWT access token generation (HS256, 8-hour expiry)
-- Token validation helper for protecting admin endpoints
-"""
 
 import os
 import bcrypt

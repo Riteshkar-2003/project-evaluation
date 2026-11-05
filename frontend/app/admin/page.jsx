@@ -280,14 +280,10 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#0d0e15] text-slate-100 font-sans selection:bg-violet-600 selection:text-white">
-      {/* Top Gradient Background */}
       <div className="pointer-events-none fixed -top-40 left-1/4 h-[500px] w-[600px] rounded-full bg-violet-600/10 blur-[130px]" />
       <div className="pointer-events-none fixed top-1/3 -right-40 h-[500px] w-[500px] rounded-full bg-indigo-600/10 blur-[130px]" />
-
-      {/* ADMIN NAVIGATION HEADER */}
       <header className="sticky top-0 z-40 border-b border-gray-800/80 bg-[#12131d]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          {/* Brand */}
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 font-black text-white shadow-lg shadow-violet-900/30 sm:h-10 sm:w-10">
               <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -306,8 +302,6 @@ export default function AdminDashboardPage() {
               </p>
             </div>
           </div>
-
-          {/* Quick Actions */}
           <div className="flex items-center gap-2.5">
             <button
               onClick={handleManualRefresh}
@@ -327,7 +321,7 @@ export default function AdminDashboardPage() {
               <span className="hidden sm:inline">Candidate View</span>
             </button>
 
-            {/* Admin identity badge */}
+            
             {adminUser && (
               <div className="hidden sm:flex items-center gap-2 rounded-xl border border-violet-700/40 bg-violet-950/40 px-3 py-2">
                 <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-[11px] font-extrabold text-white">
@@ -340,7 +334,6 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* Logout button */}
             <button
               id="admin-logout-btn"
               onClick={handleAdminLogout}
@@ -353,7 +346,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* TAB NAVIGATION BAR */}
+       
         <div className="mx-auto flex max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800/60 scrollbar-none">
           <div className="flex space-x-1 py-2">
             {[
@@ -396,7 +389,7 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      {/* NOTIFICATION TOAST */}
+    
       <AnimatePresence>
         {notification && (
           <motion.div
@@ -411,9 +404,9 @@ export default function AdminDashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* MAIN CONTAINER */}
+      
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* KPI METRIC CARDS ROW */}
+      
         {stats && (
           <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <MetricCard
@@ -467,7 +460,7 @@ export default function AdminDashboardPage() {
 
         {activeTab === "queries" && (
           <div className="space-y-6">
-            {/* Header & Controls */}
+           
             <div className="rounded-3xl border border-gray-800 bg-[#141522] p-6 shadow-xl">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
@@ -484,7 +477,7 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
 
-                {/* Status Filter Buttons */}
+               
                 <div className="flex flex-wrap items-center gap-2">
                   {[
                     { id: "all", label: "All Concerns", count: queries.length },
@@ -509,7 +502,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Search Bar */}
+             
               <div className="mt-5 relative">
                 <Search className="absolute left-3.5 top-3 h-4 w-4 text-gray-500" />
                 <input
@@ -522,7 +515,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* Queries Table / List */}
+           
             <div className="rounded-3xl border border-gray-800 bg-[#141522] overflow-hidden shadow-xl">
               {filteredQueries.length === 0 ? (
                 <div className="py-16 text-center">
@@ -553,7 +546,7 @@ export default function AdminDashboardPage() {
                     <tbody className="divide-y divide-gray-800/60 font-sans">
                       {filteredQueries.map((q, qIdx) => (
                         <tr key={`query-${q.id}-${qIdx}`} className="transition hover:bg-gray-800/30">
-                          {/* ID & Candidate */}
+                         
                           <td className="px-5 py-4">
                             <div className="font-mono text-violet-400 font-bold">#{q.id}</div>
                             <div className="mt-0.5 font-bold text-white text-xs">{q.user_name || `User #${q.user_id}`}</div>
@@ -564,14 +557,14 @@ export default function AdminDashboardPage() {
                             </div>
                           </td>
 
-                          {/* Category */}
+                         
                           <td className="px-5 py-4">
                             <span className="rounded-lg bg-gray-800/80 px-2.5 py-1 text-[11px] font-semibold text-gray-300 border border-gray-700/60">
                               {q.category}
                             </span>
                           </td>
 
-                          {/* Subject & Concern */}
+                         
                           <td className="px-5 py-4 max-w-xs">
                             <div className="font-bold text-white text-xs line-clamp-1">{q.subject}</div>
                             <div className="text-[11px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">
@@ -579,7 +572,7 @@ export default function AdminDashboardPage() {
                             </div>
                           </td>
 
-                          {/* Urgency */}
+                         
                           <td className="px-5 py-4">
                             <span
                               className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${q.urgency === "High"
@@ -593,12 +586,12 @@ export default function AdminDashboardPage() {
                             </span>
                           </td>
 
-                          {/* Status */}
+                          
                           <td className="px-5 py-4">
                             <StatusBadge status={q.status} />
                           </td>
 
-                          {/* Admin Response Status */}
+                          
                           <td className="px-5 py-4 max-w-xs">
                             {q.admin_response ? (
                               <div className="rounded-xl bg-violet-950/30 border border-violet-800/40 p-2.5 text-[11px] text-violet-200">
@@ -613,7 +606,7 @@ export default function AdminDashboardPage() {
                             )}
                           </td>
 
-                          {/* Actions */}
+                         
                           <td className="px-5 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
                               <button
@@ -645,7 +638,7 @@ export default function AdminDashboardPage() {
         {activeTab === "overview" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {/* Left Column: Quick Insights */}
+             
               <div className="rounded-3xl border border-gray-800 bg-[#141522] p-6 shadow-xl lg:col-span-2">
                 <div className="flex items-center justify-between border-b border-gray-800 pb-4">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-violet-400">
@@ -706,7 +699,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Right Column: Live Activity Feed */}
+             
               <div className="rounded-3xl border border-gray-800 bg-[#141522] p-6 shadow-xl">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-violet-400 border-b border-gray-800 pb-4">
                   <Clock className="h-4 w-4" />
@@ -1046,7 +1039,7 @@ export default function AdminDashboardPage() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-gray-800 bg-[#151624] p-6 shadow-2xl sm:p-8"
             >
-              {/* Modal Header */}
+             
               <div className="flex items-start justify-between border-b border-gray-800 pb-5">
                 <div>
                   <div className="flex items-center gap-2">
@@ -1075,7 +1068,7 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
 
-              {/* Success Message Banner */}
+             
               {updateSuccessMsg && (
                 <div className="mt-4 rounded-2xl bg-emerald-950/80 border border-emerald-700/60 p-3.5 text-xs text-emerald-200 flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -1083,7 +1076,7 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              {/* User Concern Content */}
+              
               <div className="mt-5 space-y-4">
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
@@ -1094,7 +1087,7 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                {/* Status Selector */}
+              
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
@@ -1141,7 +1134,7 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                {/* Admin Official Response */}
+                
                 <div>
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
@@ -1161,7 +1154,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Modal Footer */}
+              
               <div className="mt-6 flex items-center justify-between border-t border-gray-800 pt-4">
                 <button
                   type="button"
@@ -1241,7 +1234,7 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
 
-              {/* Candidate History Tabs */}
+              
               <div className="mt-5 space-y-6">
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-violet-400 mb-2">
@@ -1431,7 +1424,7 @@ export default function AdminDashboardPage() {
   );
 }
 
-// ── Helper UI Components ─────────────────────────────────────────────────────
+
 
 function MetricCard({ title, value, subtitle, icon: Icon, color, bg }) {
   return (

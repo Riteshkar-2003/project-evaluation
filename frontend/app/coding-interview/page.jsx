@@ -660,7 +660,7 @@ const handleKeyDown = (e) => {
           activeLang
         );
 
-        // Instant load using pre-fetched question from dashboard if available
+       
         const prefetchedStr = sessionStorage.getItem("prefetchedCodingQuestion");
         let data = null;
         if (prefetchedStr) {
@@ -2484,7 +2484,7 @@ const handleKeyDown = (e) => {
                             </div>
 
                             <p className="text-[10px] text-slate-400 mt-2 italic">
-                              🔒 Inputs & outputs are masked to preserve assessment integrity.
+                               Inputs & outputs are masked to preserve assessment integrity.
                             </p>
                           </div>
                         </div>

@@ -22,7 +22,7 @@ export default function Home() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Heading animation
+
 
   const firstText = "Prepare smarter.";
   const secondText = "Interview better.";
@@ -54,7 +54,7 @@ export default function Home() {
   };
 
 
-  // Feature cards
+ 
 
   const features = [
     {
@@ -99,7 +99,7 @@ export default function Home() {
     <main className="min-h-screen overflow-hidden bg-[#f8f7ff] text-slate-900">
 
 
-      {/* BACKGROUND ANIMATED BLOBS  */}
+      
 
 
       <motion.div
@@ -143,7 +143,7 @@ export default function Home() {
         }}
       />
 
-      {/* NAVBAR */}
+     
 
       <motion.nav
         initial={{
@@ -162,10 +162,10 @@ export default function Home() {
       >
         <div className="rounded-2xl border border-slate-200/70 bg-white/80 shadow-lg shadow-slate-900/5 backdrop-blur-xl overflow-hidden">
 
-          {/* Main bar */}
+     
           <div className="flex items-center justify-between px-4 py-3 md:px-7">
 
-            {/* Logo */}
+          
             <motion.div
               whileHover={{ scale: 1.03 }}
               className="flex cursor-pointer items-center gap-2.5"
@@ -180,17 +180,16 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Desktop navigation */}
             <div className="hidden items-center gap-8 md:flex">
               <NavLink href="#home">Home</NavLink>
               <NavLink href="#features">Features</NavLink>
               <NavLink href="#how-it-works">How It Works</NavLink>
             </div>
 
-            {/* Right side: Buttons + Hamburger */}
+           
             <div className="flex items-center gap-2">
 
-              {/* Login / Get Started – visible on all sizes */}
+           
               <motion.button
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.95 }}
@@ -210,7 +209,7 @@ export default function Home() {
                 <span className="sm:hidden">Start</span>
               </motion.button>
 
-              {/* Hamburger – only on mobile/tablet (< md) */}
+
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setMobileMenuOpen((o) => !o)}
@@ -246,7 +245,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Mobile drawer menu */}
           <AnimatePresence initial={false}>
             {mobileMenuOpen && (
               <motion.div
@@ -281,7 +279,7 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* HERO SECTION */}
+     
 
       <section
         id="home"
@@ -290,11 +288,11 @@ export default function Home() {
 
         <div className="grid items-center gap-16 lg:grid-cols-2">
 
-          {/* LEFT HERO CONTENT */}
+         
 
           <div>
 
-            {/* Small badge */}
+           
 
             <motion.div
               initial={{
@@ -327,7 +325,7 @@ export default function Home() {
               </span>
             </motion.div>
 
-            {/* ANIMATED MAIN HEADING */}
+           
 
             <motion.h1
               variants={headingContainer}
@@ -336,7 +334,7 @@ export default function Home() {
               className="max-w-3xl text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-6xl"
             >
 
-              {/* Prepare smarter. */}
+              
 
               <span className="block">
 
@@ -355,7 +353,7 @@ export default function Home() {
 
               </span>
 
-              {/* Interview better. */}
+             
 
               <span className="block bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
 
@@ -376,7 +374,7 @@ export default function Home() {
 
             </motion.h1>
 
-            {/* Description */}
+           
 
             <motion.p
               initial={{
@@ -398,7 +396,7 @@ export default function Home() {
               your skills, projects, and experience.
             </motion.p>
 
-            {/* CTA buttons */}
+           
 
             <motion.div
               initial={{
@@ -454,8 +452,7 @@ export default function Home() {
 
             </motion.div>
 
-            {/* Trust information */}
-
+           
             <motion.div
               initial={{
                 opacity: 0,
@@ -489,7 +486,7 @@ export default function Home() {
 
           </div>
 
-          {/* RIGHT SIDE INTERVIEW DASHBOARD */}
+        
 
           <motion.div
             initial={{
@@ -508,7 +505,7 @@ export default function Home() {
             className="relative"
           >
 
-            {/* Main dashboard */}
+          
 
             <motion.div
               animate={{
@@ -522,7 +519,7 @@ export default function Home() {
               className="relative rounded-[2rem] border border-white bg-white p-5 shadow-2xl shadow-violet-900/10 sm:p-7"
             >
 
-              {/* Dashboard header */}
+             
 
               <div className="flex items-center justify-between border-b border-slate-100 pb-5">
 
@@ -545,7 +542,7 @@ export default function Home() {
 
               </div>
 
-              {/* Progress */}
+             
 
               <div className="mt-6">
 
@@ -579,8 +576,7 @@ export default function Home() {
 
               </div>
 
-              {/* Question card */}
-
+             
               <motion.div
                 initial={{
                   opacity: 0,
@@ -614,7 +610,7 @@ export default function Home() {
                   databases and when you would use each.
                 </p>
 
-                {/* Answer lines */}
+              
 
                 <div className="mt-5 space-y-2">
 
@@ -628,7 +624,7 @@ export default function Home() {
 
               </motion.div>
 
-              {/* Score cards */}
+             
 
               <div className="mt-5 grid grid-cols-3 gap-3">
 
@@ -651,11 +647,7 @@ export default function Home() {
 
             </motion.div>
 
-            {/* FLOATING FEEDBACK CARD */}
-
-            {/* =====================================================
-    FLOATING AI FEEDBACK CARD
-===================================================== */}
+           
 
             <motion.div
               initial={{
@@ -698,7 +690,7 @@ export default function Home() {
             >
               <div className="flex items-center gap-2 sm:gap-3">
 
-                {/* Check icon */}
+                
 
                 <div
                   className="
@@ -722,7 +714,7 @@ export default function Home() {
                   ✓
                 </div>
 
-                {/* Feedback text */}
+               
 
                 <div className="min-w-0">
                   <p
@@ -751,7 +743,7 @@ export default function Home() {
 
               </div>
 
-              {/* Feedback progress */}
+              
 
               <div
                 className="
@@ -780,7 +772,7 @@ export default function Home() {
             </motion.div>
 
 
-            {/* Floating AI badge */}
+            
 
             <motion.div
               animate={{
@@ -830,8 +822,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURES SECTION */}
-
+     
       <section
         id="features"
         className="relative bg-white px-6 py-24 lg:px-10"
@@ -901,8 +892,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-
+     
       <section
         id="how-it-works"
         className="relative overflow-hidden bg-[#f8f7ff] px-6 py-24 sm:px-8"
@@ -939,7 +929,7 @@ export default function Home() {
 
           </motion.div>
 
-          {/* Steps */}
+        
 
           <div className="mt-16 grid gap-8 md:grid-cols-4">
 
@@ -977,7 +967,7 @@ export default function Home() {
 
       </section>
 
-      {/* FINAL CTA */}
+     
 
       <section className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 px-6 py-24 text-white sm:px-8">
 
@@ -1055,7 +1045,7 @@ export default function Home() {
 
       </section>
 
-      {/* FOOTER */}
+      
 
       <footer className="border-t border-slate-200 bg-white px-6 py-8 sm:px-8">
 
@@ -1092,7 +1082,7 @@ export default function Home() {
 }
 
 
-/* NAV LINK */
+
 
 function NavLink({ href, children }) {
   return (
@@ -1119,7 +1109,7 @@ function NavLink({ href, children }) {
 }
 
 
-/* SCORE CARD */
+
 
 function ScoreCard({ label, score }) {
   return (
@@ -1147,7 +1137,7 @@ function ScoreCard({ label, score }) {
 
 
 
-//  FEATURE CARD
+
 
 
 function FeatureCard({ feature, index }) {
@@ -1218,7 +1208,7 @@ function FeatureCard({ feature, index }) {
 
 
 
-//  STEP CARD
+
 
 
 function StepCard({

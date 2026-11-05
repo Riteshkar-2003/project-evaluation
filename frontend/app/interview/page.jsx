@@ -44,20 +44,20 @@ export default function InterviewPage() {
         try {
             setLoadingFirstQuestion(true);
 
-            // Use pre-fetched question from dashboard if available (reduces wait time)
+           
             const prefetched = sessionStorage.getItem("prefetchedFirstQuestion");
             const prefetchedDiff = sessionStorage.getItem("prefetchedDifficulty");
 
             if (prefetched && prefetchedDiff === selectedDifficulty) {
                 console.log("[Interview] Using pre-fetched question from dashboard");
                 setQuestion(prefetched);
-                // Clean up so it won't be reused on next interview
+               
                 sessionStorage.removeItem("prefetchedFirstQuestion");
                 sessionStorage.removeItem("prefetchedDifficulty");
                 return;
             }
 
-            // Fallback: fetch fresh from API
+           
             const data = await getFirstQuestion(
                 resume,
                 selectedDifficulty
@@ -178,7 +178,7 @@ export default function InterviewPage() {
             setHistory(updatedHistory);
             setEvaluatingAnswer(false);
 
-            // If 10 questions have been answered, interview is complete!
+           
             if (currentQNum >= 10 || updatedHistory.length >= 10) {
                 sessionStorage.setItem(
                     "interviewHistory",
@@ -192,7 +192,7 @@ export default function InterviewPage() {
                 return;
             }
 
-            // Immediately generate the next question and advance straight to it
+            
             setGeneratingNextQuestion(true);
             try {
                 const nextData = await getNextQuestion(

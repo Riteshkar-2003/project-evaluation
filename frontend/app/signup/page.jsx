@@ -101,9 +101,7 @@ export default function SignupUser() {
                 window.location.origin
             );
 
-            // ==========================================
-            // GOOGLE ID TOKEN INITIALIZATION
-            // ==========================================
+           
             window.google.accounts.id.initialize({
                 client_id: clientId,
 
@@ -122,8 +120,6 @@ export default function SignupUser() {
                         !!response?.credential
                     );
 
-                    // IMPORTANT
-                    // Google MUST return an ID token
                     if (!response?.credential) {
                         console.error(
                             "Google did not return credential"
@@ -144,8 +140,7 @@ export default function SignupUser() {
                             "Sending credential to backend..."
                         );
 
-                        // IMPORTANT:
-                        // Pass ONLY response.credential
+                       
                         const result = await googleLogin(
                             response.credential
                         );
@@ -161,7 +156,7 @@ export default function SignupUser() {
                             );
                         }
 
-                        // Save user
+                       
                         localStorage.setItem(
                             "user",
                             JSON.stringify(result.user)
@@ -198,9 +193,7 @@ export default function SignupUser() {
             );
         };
 
-        // ==========================================
-        // LOAD GOOGLE SCRIPT
-        // ==========================================
+       
         if (window.google) {
             initializeGoogle();
             return;
@@ -246,9 +239,7 @@ export default function SignupUser() {
         };
     }, [router]);
 
-    // ==========================================
-    // GOOGLE LOGIN BUTTON
-    // ==========================================
+    
     const handleGoogleLogin = () => {
         setError("");
 
@@ -261,14 +252,6 @@ export default function SignupUser() {
 
         setGoogleLoading(true);
 
-        /*
-         * Use Google's ID-token button flow.
-         *
-         * We do NOT use googleButtonRef.
-         *
-         * The Google button is rendered into the
-         * element with id="google-login-button".
-         */
 
         const container =
             document.getElementById(
@@ -285,7 +268,7 @@ export default function SignupUser() {
             return;
         }
 
-        // Clear previous Google button
+      
         container.innerHTML = "";
 
         window.google.accounts.id.renderButton(
@@ -300,10 +283,7 @@ export default function SignupUser() {
             }
         );
 
-        /*
-         * Automatically click Google's generated
-         * button after rendering.
-         */
+       
         setTimeout(() => {
             const googleButton =
                 container.querySelector(
@@ -430,88 +410,7 @@ export default function SignupUser() {
                     )}
 
 
-                    {/* <form
-                        onSubmit={handleSignup}
-                        className="mt-3 space-y-5"
-                    >
-
-
-                        <div>
-                            <label
-                                htmlFor="name"
-                                className="text-sm font-medium text-slate-500"
-                            >
-                                Full Name
-                            </label>
-
-                            <input
-                                id="name"
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="Enter your name"
-                                autoComplete="name"
-                                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-500 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-                                required
-                            />
-                        </div>
-
-
-                        <div>
-                            <label
-                                htmlFor="email"
-                                className="text-sm font-medium text-slate-500"
-                            >
-                                Email
-                            </label>
-
-                            <input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email"
-                                autoComplete="email"
-                                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-500 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-                                required
-                            />
-                        </div>
-
-
-                        <div>
-                            <label
-                                htmlFor="password"
-                                className="text-sm font-medium text-slate-500"
-                            >
-                                Password
-                            </label>
-
-                            <input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Minimum 6 characters"
-                                autoComplete="new-password"
-                                minLength={6}
-                                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-500 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-                                required
-                            />
-                        </div>
-
-
-                        <motion.button
-                            type="submit"
-                            disabled={loading}
-                            whileHover={!loading ? { scale: 1.02 } : {}}
-                            whileTap={!loading ? { scale: 0.98 } : {}}
-                            className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 py-3 font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:from-violet-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {loading
-                                ? "Creating Account..."
-                                : "Create Account"}
-                        </motion.button>
-                    </form> */}
+                  
 
 
 
@@ -525,7 +424,7 @@ export default function SignupUser() {
                         className="mt-3 space-y-5"
                     >
 
-                        {/* Full Name */}
+                       
                         <div>
                             <label
                                 htmlFor="name"
@@ -554,7 +453,7 @@ export default function SignupUser() {
                         </div>
 
 
-                        {/* Email */}
+                       
                         <div>
                             <label
                                 htmlFor="email"
@@ -583,7 +482,7 @@ export default function SignupUser() {
                         </div>
 
 
-                        {/* Password */}
+                       
                         <div>
                             <label
                                 htmlFor="password"
@@ -626,7 +525,7 @@ export default function SignupUser() {
                         </div>
 
 
-                        {/* Create Account Button */}
+                      
                         <motion.button
                             type="submit"
                             disabled={loading}
@@ -679,7 +578,7 @@ export default function SignupUser() {
                         </span>
                     </motion.button>
 
-                    {/* Hidden Google button container */}
+                  
                     <div
                         id="google-login-button"
                         style={{
@@ -716,15 +615,6 @@ export default function SignupUser() {
 
 
 
-
-{/* <div className="my-6 flex items-center gap-3">
-    <div className="h-px flex-1 bg-slate-300" />
-    <span className="text-sm text-slate-500">
-        OR
-    </span> <div className="h-px flex-1 bg-slate-300" />
-</div>
-
- */}
 
 
 
