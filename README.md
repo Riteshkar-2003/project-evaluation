@@ -1,4 +1,4 @@
-# WorksBot - AI Interview Preparation Platform
+## AI Interview Preparation Platform
 
 An intelligent, adaptive AI-powered interview preparation platform that conducts resume-based technical interviews and coding assessments, evaluates answers in real-time, and generates detailed performance reports.
 
@@ -23,7 +23,7 @@ An intelligent, adaptive AI-powered interview preparation platform that conducts
 
 ## Overview
 
-**WorksBot** is a full-stack AI interview preparation web application. Candidates upload their resume, and the system:
+
 
 1. Extracts and parses resume data (skills, projects, experience, education)
 2. Generates personalized **technical interview questions** based solely on resume content
@@ -84,134 +84,6 @@ The platform uses **Groq's LLaMA 3 70B** model for all AI reasoning, **LangChain
 | PDF Parsing | PyPDF |
 | Auth | bcrypt password hashing, Google OAuth 2.0 (google-auth) |
 | Containerization | Docker Compose (Judge0 sandbox: PostgreSQL + Redis + Judge0 server + worker) |
-
----
-
-## System Architecture
-
-```
-+-------------------------------------------------------------+
-|                    USER BROWSER                             |
-|          Next.js 16 Frontend  (localhost:3000)              |
-+----------------------+--------------------------------------+
-                       | REST API (fetch)
-+----------------------v--------------------------------------+
-|              FastAPI Backend  (localhost:8000)              |
-|                                                             |
-|  +--------------+  +--------------+  +------------------+  |
-|  | interview.py |  |coding_router |  |  admin_router.py |  |
-|  |  (Technical) |  |  (Coding)    |  |  (Admin panel)   |  |
-|  +------+-------+  +------+-------+  +------------------+  |
-|         |                 |                                 |
-|  +------v-----------------v------+                         |
-|  |        Groq API (LLaMA 3 70B) |                         |
-|  |    via LangChain / Groq SDK   |                         |
-|  +-------------------------------+                         |
-|                                                             |
-|  +---------------------+  +---------------------------+    |
-|  |  ChromaDB (RAG)     |  |  MySQL Database           |    |
-|  |  rag_technical/     |  |  (users, reports,         |    |
-|  |  rag_coding/        |  |   submissions, resumes)   |    |
-|  +---------------------+  +---------------------------+    |
-|                                                             |
-|  +-----------------------------------------------------+   |
-|  |  Judge0 Sandbox  (localhost:2358)  - Docker         |   |
-|  |  PostgreSQL + Redis + Server + Worker               |   |
-|  +-----------------------------------------------------+   |
-+-------------------------------------------------------------+
-```
-
----
-
-## Project Structure
-
-```
-worksbot_project/
-|-- backend/
-|   |-- main.py                      # FastAPI app entry point, auth & interview routes
-|   |-- config.py                    # LangChain + Groq LLM configuration
-|   |-- database.py                  # MySQL connection, schema creation, seed
-|   |-- auth.py                      # Signup / login with bcrypt
-|   |-- auth_google.py               # Google OAuth 2.0 handler
-|   |-- interview.py                 # Resume extraction, question generation, evaluation
-|   |-- report.py                    # Report generation and DB persistence
-|   |-- coding_router.py             # Coding interview API routes
-|   |-- coding_question_generator.py # AI coding problem generator
-|   |-- coding_evaluation.py         # Code submission evaluator
-|   |-- code_executor.py             # Judge0 + local Python sandbox integration
-|   |-- admin_router.py              # Admin panel API routes
-|   |-- rag_technical/               # RAG vector store for technical interview
-|   |   |-- retriever.py
-|   |   |-- create_vector_db.py
-|   |   +-- documents/
-|   |-- rag_coding/                  # RAG vector store for coding interview
-|   |   |-- retriever.py
-|   |   |-- create_vector_db.py
-|   |   +-- documents/
-|   |-- requirements.txt
-|   |-- .env                         # Local secrets (not committed)
-|   +-- .env.example                 # Template for environment variables
-|
-|-- frontend/
-|   |-- app/
-|   |   |-- page.js                  # Landing / home page
-|   |   |-- layout.js                # Root layout
-|   |   |-- globals.css              # Global styles
-|   |   |-- dashboard/page.jsx       # Main dashboard (resume upload + start interview)
-|   |   |-- interview/page.jsx       # Technical interview session
-|   |   |-- coding-interview/page.jsx  # Coding interview session
-|   |   |-- report/page.jsx          # Technical interview report
-|   |   |-- report_coding/page.jsx   # Coding interview report
-|   |   |-- history/page.jsx         # Interview history
-|   |   |-- profile/page.jsx         # User profile
-|   |   |-- login/page.jsx           # Login page
-|   |   |-- signup/page.jsx          # Signup page
-|   |   |-- admin/page.jsx           # Admin dashboard
-|   |   +-- components/
-|   |       |-- UserQueryModal.jsx   # Support query modal
-|   |       +-- GlobalQueryWidget.jsx
-|   |-- lib/
-|   |   +-- api.js                   # Centralized API client functions
-|   +-- package.json
-|
-|-- docker-compose.yml               # Judge0 sandbox (PostgreSQL + Redis + Judge0)
-|-- judge0.conf                      # Judge0 configuration
-+-- README.md
-```
-
----
-
-## Database Schema
-
-| Table | Purpose |
-|---|---|
-| users | User accounts (name, email, password hash) |
-| user_resumes | Uploaded resume files, extracted JSON, detected skills |
-| interview_answers | Per-question Q&A + AI evaluation for technical interviews |
-| interview_reports | Aggregated technical interview scores and final level |
-| coding_questions | AI-generated coding problems with test cases |
-| coding_submissions | User code submissions (language, code, test results) |
-| coding_reports | AI evaluation of coding submissions (scores, complexity, feedback) |
-| user_queries | User support tickets with admin responses |
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.10+
-- Node.js 18+ and npm
-- MySQL 8.0+ running locally
-- Docker Desktop (for Judge0 code sandbox)
-- Groq API key (free at https://console.groq.com)
-
----
-
-
-
-
-
 
 
 
