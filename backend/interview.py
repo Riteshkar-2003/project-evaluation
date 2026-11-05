@@ -23,12 +23,15 @@ Conduct a resume-based technical interview.
 
 Rules:
 - Ask exactly ONE question at a time.
-- Questions must come only from information in the resume.
+- Questions must come only from information in the resume (candidate's skills, projects, and work experience/internships).
 - Never invent skills, projects, companies, technologies or experience.
+- If the candidate has work experience or internships, you MUST ask experience-based technical questions referencing their companies, roles, and real-world engineering challenges.
+- Ask questions exploring their listed projects, technical decisions, and architecture.
+- Ask questions testing deep understanding of their listed programming languages and technologies.
 - Analyze the candidate's previous answer.
 - Adjust difficulty based on performance.
 - Avoid repeatedly asking about the same topic.
-- Cover different resume sections when possible.
+- Cover different resume sections (skills, projects, work experience).
 - Do not give the answer.
 - Behave like a real technical interviewer.
 
@@ -282,6 +285,77 @@ If information is missing, return an empty list.
 
 
 
+def get_question_focus_instruction(compact_resume, question_idx):
+    """
+    Determines the specific interview focus (Skills, Projects, or Work Experience)
+    based on the candidate's resume and the current question number.
+    Ensures work experience questions are asked if the candidate has work experience.
+    """
+    work_exp = compact_resume.get("work_experience", [])
+    internships = compact_resume.get("internships", [])
+    projects = compact_resume.get("projects", [])
+    all_skills = list(compact_resume.get("skills", [])) + list(compact_resume.get("programming_languages", [])) + list(compact_resume.get("technologies", []))
+    has_experience = bool(work_exp or internships)
+
+    if has_experience:
+        # Rotate across Work Experience, Projects, and Skills
+        # Q1: Introduction / Experience or Project overview
+        # Q2, Q5, Q8: Work Experience deep dive
+        # Q3, Q6, Q9: Skills & Technical Concepts
+        # Q4, Q7, Q10: Projects architecture & implementation
+        mod = question_idx % 3
+        if mod == 2 or (question_idx == 1 and not projects):
+            exp_list = work_exp if work_exp else internships
+            exp_names = [f"{e.get('role', 'Developer')} at {e.get('company', 'Company')}" for e in exp_list if isinstance(e, dict)][:2]
+            exp_context = ", ".join(exp_names) if exp_names else "candidate's listed workplace"
+            return (
+                f"TARGET FOCUS: WORK EXPERIENCE / INTERNSHIP ({exp_context})\n"
+                f"- The candidate HAS professional work experience or internship experience.\n"
+                f"- You MUST ask a technical question about their work experience or internship.\n"
+                f"- Reference their role or company ({exp_context}).\n"
+                f"- Ask about real-world technical problems they solved, system architecture, performance optimization, production issues, API design, or tools used on the job."
+            )
+        elif mod == 0:
+            skill_sample = ", ".join(all_skills[:6]) if all_skills else "software engineering"
+            return (
+                f"TARGET FOCUS: TECHNICAL SKILLS & CONCEPTS ({skill_sample})\n"
+                f"- Ask an in-depth technical question testing their understanding of one of their specific skills or programming languages.\n"
+                f"- Test core principles, internals, trade-offs, debugging, error handling, or performance optimization in that specific technology."
+            )
+        else:
+            if projects:
+                proj_names = [p.get("name", "Project") for p in projects if isinstance(p, dict)][:3]
+                return (
+                    f"TARGET FOCUS: CANDIDATE PROJECTS ({', '.join(proj_names)})\n"
+                    f"- Ask a detailed technical question about one of their specific listed projects.\n"
+                    f"- Reference the project name and its tech stack.\n"
+                    f"- Ask about architecture, API/database design, state management, security, or a complex technical trade-off they solved in that project."
+                )
+            else:
+                return (
+                    "TARGET FOCUS: WORK EXPERIENCE & PRODUCTION BEST PRACTICES\n"
+                    "- Ask about their production experience at their listed company, such as CI/CD, testing, microservices, or code reviews."
+                )
+    else:
+        # Candidate has NO work experience (student/fresher):
+        # Alternate between Projects and Skills
+        if question_idx % 2 == 0 or not projects:
+            skill_sample = ", ".join(all_skills[:6]) if all_skills else "software engineering"
+            return (
+                f"TARGET FOCUS: TECHNICAL SKILLS & CONCEPTS ({skill_sample})\n"
+                f"- Ask an in-depth technical question about one of the candidate's core programming languages or technologies.\n"
+                f"- Focus on concepts, error handling, algorithms, data structures, or framework-specific internals."
+            )
+        else:
+            proj_names = [p.get("name", "Project") for p in projects if isinstance(p, dict)][:3]
+            return (
+                f"TARGET FOCUS: CANDIDATE PROJECTS ({', '.join(proj_names)})\n"
+                f"- Ask a detailed technical question about one of their specific listed projects.\n"
+                f"- Reference the project name and tech stack.\n"
+                f"- Ask about system design, implementation challenges, database choices, or scalability in that project."
+            )
+
+
 def generate_first_question(
     resume_data,
     difficulty
@@ -298,11 +372,26 @@ def generate_first_question(
         except Exception as rag_err:
             print("[WARN] RAG context error in generate_first_question:", rag_err)
 
-        prompt = f"""Start technical interview. Difficulty: {difficulty}.
-Resume: {compact_json(compact_resume)}
-Sections: {", ".join(sections)}
-{f"Knowledge context: {rag_context[:500]}" if rag_context else ""}
-Ask ONE technical question from the resume. Return ONLY the question."""
+        focus_guidance = get_question_focus_instruction(compact_resume, 1)
+
+        prompt = f"""You are a senior technical interviewer starting a technical interview.
+Difficulty: {difficulty}.
+
+Candidate Profile:
+- Skills & Tech Stack: {', '.join(skills) if skills else 'Software Engineering'}
+- Projects: {compact_json(compact_resume.get('projects', [])[:3])}
+- Work Experience: {compact_json(compact_resume.get('work_experience', [])[:2])}
+- Internships: {compact_json(compact_resume.get('internships', [])[:2])}
+
+{focus_guidance}
+{f"Knowledge context: {rag_context[:400]}" if rag_context else ""}
+
+Instructions:
+1. Generate ONE realistic, specific technical question based on their actual resume.
+2. If the candidate has work experience or internships, ask an experience-related technical question referencing their role or work.
+3. If the candidate does not have work experience, ask a question based on their listed projects and technical skills.
+4. DO NOT ask conversational icebreaker questions like 'Tell me about yourself'. Ask a direct, concrete technical question.
+5. Return ONLY the question text, no intro, no explanation, no formatting."""
 
         response = llm.invoke([
             SystemMessage(content=SYSTEM_PROMPT),
@@ -314,8 +403,18 @@ Ask ONE technical question from the resume. Return ONLY the question."""
     except Exception as e:
         print("[WARN] generate_first_question failed:", e)
 
-    first_skill = skills[0] if skills else "software development"
-    return f"Can you tell me about your background with {first_skill} and discuss an end-to-end technical project you worked on?"
+    work_exp = resume_data.get("work_experience", []) or resume_data.get("internships", [])
+    projects = resume_data.get("projects", [])
+    if work_exp and isinstance(work_exp, list) and len(work_exp) > 0:
+        company = work_exp[0].get("company") or "your previous company"
+        role = work_exp[0].get("role") or "developer"
+        return f"During your experience as {role} at {company}, what was the most challenging technical problem you solved, and what architecture or tools did you use?"
+    elif projects and isinstance(projects, list) and len(projects) > 0:
+        proj_name = projects[0].get("name") or "your primary project"
+        return f"In your project '{proj_name}', could you explain the overall system architecture and why you chose your specific technology stack?"
+    else:
+        first_skill = skills[0] if skills else "software development"
+        return f"Can you tell me about your background with {first_skill} and discuss an end-to-end technical project you worked on?"
 
 
 
@@ -391,7 +490,7 @@ def generate_next_question(
         recent_history = get_recent_history(chat_history, limit=3)
         all_sections = get_resume_sections(resume_data)
         next_section = get_next_section(all_sections, asked_sections)
-        skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", []))
+        skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", [])) + list(resume_data.get("technologies", []))
 
         rag_context = ""
         try:
@@ -404,12 +503,34 @@ def generate_next_question(
             "weak": (evaluation.get("weaknesses", []) if isinstance(evaluation, dict) else [])[:1]
         }
 
-        prompt = f"""Continue technical interview. Difficulty: {current_difficulty}. Section: {next_section}.
-Resume: {compact_json(compact_resume)}
-Recent Q&A: {compact_json(recent_history)}
-Last score: {compact_json(eval_summary)}
+        q_idx = len(chat_history) + 1
+        focus_guidance = get_question_focus_instruction(compact_resume, q_idx)
+
+        prompt = f"""You are a senior technical interviewer continuing the technical interview.
+Question Number: {q_idx} of 10.
+Difficulty: {current_difficulty}.
+
+Candidate Profile:
+- Skills & Tech Stack: {', '.join(skills) if skills else 'Software Engineering'}
+- Projects: {compact_json(compact_resume.get('projects', [])[:3])}
+- Work Experience: {compact_json(compact_resume.get('work_experience', [])[:2])}
+- Internships: {compact_json(compact_resume.get('internships', [])[:2])}
+
+{focus_guidance}
+
+Recent Q&A:
+{compact_json(recent_history)}
+
+Candidate last answer score: {eval_summary.get('score', 0)}
 {f"Context: {rag_context[:400]}" if rag_context else ""}
-Ask ONE new question not already covered. Return ONLY the question."""
+
+Instructions:
+1. Ask ONE new technical question adhering strictly to the TARGET FOCUS above.
+2. If the focus is WORK EXPERIENCE, ask a question about their work experience or internship at their listed company/role (production challenges, systems built, real-world tools).
+3. If the focus is PROJECTS, ask a question referencing their project name and tech stack (architecture, database design, trade-offs).
+4. If the focus is SKILLS, test technical depth in their specific skills and programming languages.
+5. DO NOT repeat any question or topic already covered in previous Q&A.
+6. Return ONLY the question text."""
 
         response = llm.invoke([
             SystemMessage(content=SYSTEM_PROMPT),
@@ -421,8 +542,21 @@ Ask ONE new question not already covered. Return ONLY the question."""
     except Exception as e:
         print("[WARN] generate_next_question failed:", e)
 
-    first_skill = skills[0] if skills else "software engineering"
-    return f"Can you walk me through a key technical challenge you encountered and how you resolved it?"
+    work_exp = resume_data.get("work_experience", []) or resume_data.get("internships", [])
+    projects = resume_data.get("projects", [])
+    q_idx = len(chat_history) + 1
+
+    if work_exp and isinstance(work_exp, list) and len(work_exp) > 0 and (q_idx % 3 == 2):
+        exp = work_exp[0]
+        company = exp.get("company") or "your company"
+        return f"At {company}, how did you ensure system reliability, monitor production performance, and handle edge cases in your implementations?"
+    elif projects and isinstance(projects, list) and len(projects) > 0 and (q_idx % 2 == 1):
+        proj = projects[(q_idx // 2) % len(projects)]
+        pname = proj.get("name") or "your project"
+        return f"In your project '{pname}', how did you design data flow and handle error handling or scaling constraints?"
+    else:
+        first_skill = skills[(q_idx - 1) % len(skills)] if skills else "software engineering"
+        return f"Can you walk me through how you optimize performance, handle concurrency, and manage state when working with {first_skill}?"
 
 def build_computed_report(resume_data, interview_history):
     if not interview_history:

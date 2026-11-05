@@ -35,6 +35,7 @@ export default function InterviewPage() {
     const [questionNumber, setQuestionNumber] = useState(1);
     const [resumeData, setResumeData] = useState(null);
     const [history, setHistory] = useState([]);
+    const [stopping, setStopping] = useState(false);
     const hasStartedRef = useRef(false);
 
     const generateFirstQuestion = async (
@@ -287,12 +288,11 @@ export default function InterviewPage() {
     };
 
     const stopInterview = async () => {
-        if (history.length < 3) {
-            alert(
-                `Please answer at least 3 questions before stopping the interview. You have answered ${history.length} question(s).`
-            );
+        if (history.length >= 10 || questionNumber > 10 || stopping) {
             return;
         }
+
+        setStopping(true);
 
         sessionStorage.setItem(
             "interviewHistory",
@@ -387,15 +387,28 @@ export default function InterviewPage() {
                             <span className="font-semibold text-indigo-600">{difficulty}</span>
                         </div>
 
-                        <motion.button
-                            onClick={stopInterview}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="rounded-xl border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-100 sm:px-4 sm:py-2 sm:text-sm"
-                        >
-                            <span className="hidden sm:inline">Stop Interview</span>
-                            <span className="sm:hidden">Stop</span>
-                        </motion.button>
+                        {questionNumber <= 10 && history.length < 10 && (
+                            <motion.button
+                                onClick={stopInterview}
+                                disabled={stopping || evaluatingAnswer || generatingNextQuestion}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="rounded-xl border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-100 sm:px-4 sm:py-2 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            >
+                                {stopping ? (
+                                    <>
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        <span className="hidden sm:inline">Generating Report...</span>
+                                        <span className="sm:hidden">Ending...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="hidden sm:inline">Stop Interview</span>
+                                        <span className="sm:hidden">Stop</span>
+                                    </>
+                                )}
+                            </motion.button>
+                        )}
                     </div>
                 </div>
             </motion.header>
