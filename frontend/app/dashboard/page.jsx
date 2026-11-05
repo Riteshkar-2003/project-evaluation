@@ -42,25 +42,46 @@ export default function Dashboard() {
         checked: false,
     });
 
-    const checkSkillsEligibility = (rdata) => {
+    const checkSkillsEligibility = (rdata, backendElig = null) => {
+        // 1. If backend already checked and approved coding eligibility, honor it directly
+        if (backendElig && typeof backendElig.is_eligible === "boolean") {
+            return {
+                isEligible: backendElig.is_eligible,
+                langs: backendElig.eligible_languages || [],
+            };
+        }
+        // 2. Check sessionStorage for previously saved backend eligibility
+        if (typeof window !== "undefined") {
+            try {
+                const saved = sessionStorage.getItem("codingEligibility");
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    const isEl = parsed.is_eligible ?? parsed.isEligible;
+                    if (typeof isEl === "boolean") {
+                        return {
+                            isEligible: isEl,
+                            langs: parsed.eligible_languages || parsed.langs || [],
+                        };
+                    }
+                }
+            } catch (e) {}
+        }
         if (!rdata) return { isEligible: false, langs: [] };
-        const skillsList = [
-            ...(Array.isArray(rdata.skills) ? rdata.skills : []),
-            ...(Array.isArray(rdata.programming_languages) ? rdata.programming_languages : []),
-            ...(Array.isArray(rdata.technologies) ? rdata.technologies : []),
-        ].map((s) => String(s).toLowerCase().trim());
-        const text = skillsList.join(" ");
-
+        if (rdata.coding_eligibility && typeof rdata.coding_eligibility.is_eligible === "boolean") {
+            return {
+                isEligible: rdata.coding_eligibility.is_eligible,
+                langs: rdata.coding_eligibility.eligible_languages || [],
+            };
+        }
+        // 3. Deep search full resume JSON string across all sections
+        const text = (typeof rdata === "string" ? rdata : JSON.stringify(rdata)).toLowerCase();
         const detected = [];
         if (/\bpython\b/.test(text)) detected.push("Python");
         const noJs = text.replace(/\bjavascript\b|\bjs\b/g, "");
         if (/\bjava\b/.test(noJs)) detected.push("Java");
         if (/\bjavascript\b|\bjs\b|\becmascript\b|\bnode(?:\.js)?\b/.test(text)) detected.push("JavaScript");
         if (/\bc\+\+|\bcpp\b/.test(text)) detected.push("C++");
-        if (
-            /\bc\s*programming|\blanguage\s*c\b|\bc\s*language\b|\bansi\s*c\b/.test(text) ||
-            skillsList.some((s) => s === "c")
-        )
+        if (/\bc\s*programming|\blanguage\s*c\b|\bc\s*language\b|\bansi\s*c\b/.test(text) || /\b[,\s"']c[,\s"']/.test(text))
             detected.push("C");
 
         return {
@@ -182,7 +203,11 @@ export default function Dashboard() {
                 setExistingResumeName(data.filename || resumeFile.name);
                 setHasExistingResume(true);
 
-                const elig = checkSkillsEligibility(data.resume_data);
+                if (data.coding_eligibility) {
+                    sessionStorage.setItem("codingEligibility", JSON.stringify(data.coding_eligibility));
+                }
+
+                const elig = checkSkillsEligibility(data.resume_data, data.coding_eligibility);
                 setCodingEligibility({ ...elig, checked: true });
             } else {
                 const storedResume = sessionStorage.getItem("resumeData");
@@ -212,7 +237,12 @@ export default function Dashboard() {
 
             if (interviewType === "coding") {
                 const resumeForCheck = currentResumeData || JSON.parse(sessionStorage.getItem("resumeData") || "{}");
-                const elig = checkSkillsEligibility(resumeForCheck);
+                let parsedElig = null;
+                const storedElig = sessionStorage.getItem("codingEligibility");
+                if (storedElig) {
+                    try { parsedElig = JSON.parse(storedElig); } catch (e) {}
+                }
+                const elig = checkSkillsEligibility(resumeForCheck, parsedElig);
                 setCodingEligibility({ ...elig, checked: true });
 
                 if (!elig.isEligible) {

@@ -286,31 +286,36 @@ def generate_first_question(
     resume_data,
     difficulty
 ):
-    compact_resume = build_compact_resume(resume_data)
-    sections = get_resume_sections(resume_data)
-    skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", [])) + list(resume_data.get("technologies", []))
+    skills = []
+    try:
+        compact_resume = build_compact_resume(resume_data)
+        sections = get_resume_sections(resume_data)
+        skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", [])) + list(resume_data.get("technologies", []))
 
-    # Fetch RAG context concurrently (does not depend on LLM)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
-        rag_future = ex.submit(get_rag_context, skills=skills, difficulty=difficulty, top_k=2)
-        rag_context = rag_future.result(timeout=8)
+        rag_context = ""
+        try:
+            rag_context = get_rag_context(skills=skills, difficulty=difficulty, top_k=2)
+        except Exception as rag_err:
+            print("[WARN] RAG context error in generate_first_question:", rag_err)
 
-    prompt = f"""Start technical interview. Difficulty: {difficulty}.
+        prompt = f"""Start technical interview. Difficulty: {difficulty}.
 Resume: {compact_json(compact_resume)}
 Sections: {", ".join(sections)}
 {f"Knowledge context: {rag_context[:500]}" if rag_context else ""}
 Ask ONE technical question from the resume. Return ONLY the question."""
 
-    try:
         response = llm.invoke([
             SystemMessage(content=SYSTEM_PROMPT),
             HumanMessage(content=prompt)
         ])
-        return response.content.strip()
+        res_text = response.content.strip()
+        if res_text:
+            return res_text
     except Exception as e:
-        print("[WARN] generate_first_question LLM failed:", e)
-        first_skill = skills[0] if skills else "software engineering"
-        return f"Can you explain your experience with {first_skill} and describe a key challenge you solved?"
+        print("[WARN] generate_first_question failed:", e)
+
+    first_skill = skills[0] if skills else "software development"
+    return f"Can you tell me about your background with {first_skill} and discuss an end-to-end technical project you worked on?"
 
 
 
@@ -320,12 +325,12 @@ def analyze_answer(
     candidate_answer,
     current_difficulty
 ):
-    # Fetch RAG context in parallel (I/O-bound, doesn't block LLM)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
-        rag_future = ex.submit(retrieve_answer_analysis_knowledge, question, candidate_answer, 2)
-        rag_context = rag_future.result(timeout=8)
+    rag_context = ""
+    try:
+        rag_context = retrieve_answer_analysis_knowledge(question, candidate_answer, 2)
+    except Exception as rag_err:
+        print("[WARN] RAG analysis context error:", rag_err)
 
-    # Trim candidate answer to avoid inflating tokens
     answer_trimmed = (candidate_answer or "")[:1500]
 
     prompt = f"""Evaluate this interview answer. Difficulty: {current_difficulty}.
@@ -336,17 +341,20 @@ Score 0-10. Next difficulty: Easy/Medium/Hard.
 Return ONLY valid JSON:
 {{"score":0,"evaluation":"brief analysis","correct_answer":"ideal answer in 2-3 sentences","strengths":["s1"],"weaknesses":["w1"],"next_difficulty":"Easy"}}"""
 
-    response = llm.invoke([
-        SystemMessage(
-            content=(
-                "You are a technical interviewer evaluator. "
-                "Return only valid JSON, no extra text."
-            )
-        ),
-        HumanMessage(content=prompt)
-    ])
-
-    result = safe_json_loads(response.content)
+    try:
+        response = llm.invoke([
+            SystemMessage(
+                content=(
+                    "You are a technical interviewer evaluator. "
+                    "Return only valid JSON, no extra text."
+                )
+            ),
+            HumanMessage(content=prompt)
+        ])
+        result = safe_json_loads(response.content)
+    except Exception as e:
+        print("[WARN] analyze_answer LLM failed:", e)
+        result = {}
 
     try:
         score = float(result.get("score", 0))
@@ -377,40 +385,44 @@ def generate_next_question(
     evaluation,
     asked_sections
 ):
-    compact_resume = build_compact_resume(resume_data)
-    recent_history = get_recent_history(chat_history, limit=3)  # reduced from 4
-    all_sections = get_resume_sections(resume_data)
-    next_section = get_next_section(all_sections, asked_sections)
-    skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", []))
+    skills = []
+    try:
+        compact_resume = build_compact_resume(resume_data)
+        recent_history = get_recent_history(chat_history, limit=3)
+        all_sections = get_resume_sections(resume_data)
+        next_section = get_next_section(all_sections, asked_sections)
+        skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", []))
 
-    # Parallel RAG fetch
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
-        rag_future = ex.submit(get_rag_context, skills=skills, difficulty=current_difficulty, query_text=str(next_section or ""), top_k=2)
-        rag_context = rag_future.result(timeout=8)
+        rag_context = ""
+        try:
+            rag_context = get_rag_context(skills=skills, difficulty=current_difficulty, query_text=str(next_section or ""), top_k=2)
+        except Exception as rag_err:
+            print("[WARN] RAG next_question error:", rag_err)
 
-    # Compact eval summary (only score + 1 weakness)
-    eval_summary = {
-        "score": evaluation.get("score", 0),
-        "weak": (evaluation.get("weaknesses") or [""])[:1]
-    }
+        eval_summary = {
+            "score": evaluation.get("score", 0) if isinstance(evaluation, dict) else 0,
+            "weak": (evaluation.get("weaknesses", []) if isinstance(evaluation, dict) else [])[:1]
+        }
 
-    prompt = f"""Continue technical interview. Difficulty: {current_difficulty}. Section: {next_section}.
+        prompt = f"""Continue technical interview. Difficulty: {current_difficulty}. Section: {next_section}.
 Resume: {compact_json(compact_resume)}
 Recent Q&A: {compact_json(recent_history)}
 Last score: {compact_json(eval_summary)}
 {f"Context: {rag_context[:400]}" if rag_context else ""}
 Ask ONE new question not already covered. Return ONLY the question."""
 
-    try:
         response = llm.invoke([
             SystemMessage(content=SYSTEM_PROMPT),
             HumanMessage(content=prompt)
         ])
-        return response.content.strip()
+        res_text = response.content.strip()
+        if res_text:
+            return res_text
     except Exception as e:
-        print("[WARN] generate_next_question LLM failed:", e)
-        first_skill = skills[0] if skills else "software engineering"
-        return f"Can you walk me through a challenging {next_section or first_skill} implementation you built and the trade-offs you made?"
+        print("[WARN] generate_next_question failed:", e)
+
+    first_skill = skills[0] if skills else "software engineering"
+    return f"Can you walk me through a key technical challenge you encountered and how you resolved it?"
 
 def build_computed_report(resume_data, interview_history):
     if not interview_history:

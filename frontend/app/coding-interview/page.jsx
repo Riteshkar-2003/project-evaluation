@@ -92,14 +92,29 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 const checkSkillsEligibility = (rdata) => {
+  if (typeof window !== "undefined") {
+    try {
+      const saved = sessionStorage.getItem("codingEligibility");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const isEl = parsed.is_eligible ?? parsed.isEligible;
+        if (typeof isEl === "boolean" && isEl) {
+          return {
+            isEligible: true,
+            langs: parsed.eligible_languages || parsed.langs || [],
+          };
+        }
+      }
+    } catch (e) {}
+  }
   if (!rdata) return { isEligible: false, langs: [] };
-  const skillsList = [
-    ...(Array.isArray(rdata.skills) ? rdata.skills : []),
-    ...(Array.isArray(rdata.programming_languages) ? rdata.programming_languages : []),
-    ...(Array.isArray(rdata.technologies) ? rdata.technologies : []),
-  ].map((s) => String(s).toLowerCase().trim());
-  const text = skillsList.join(" ");
-
+  if (rdata.coding_eligibility && typeof rdata.coding_eligibility.is_eligible === "boolean") {
+    return {
+      isEligible: rdata.coding_eligibility.is_eligible,
+      langs: rdata.coding_eligibility.eligible_languages || [],
+    };
+  }
+  const text = (typeof rdata === "string" ? rdata : JSON.stringify(rdata)).toLowerCase();
   const detected = [];
   if (/\bpython\b/.test(text)) detected.push("Python");
   const noJs = text.replace(/\bjavascript\b|\bjs\b/g, "");
@@ -108,7 +123,7 @@ const checkSkillsEligibility = (rdata) => {
   if (/\bc\+\+|\bcpp\b/.test(text)) detected.push("C++");
   if (
     /\bc\s*programming|\blanguage\s*c\b|\bc\s*language\b|\bansi\s*c\b/.test(text) ||
-    skillsList.some((s) => s === "c")
+    /\b[,\s"']c[,\s"']/.test(text)
   )
     detected.push("C");
 
